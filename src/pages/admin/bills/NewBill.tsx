@@ -16,10 +16,15 @@ import {
   Switch,
   Table,
   TreeSelect,
+  Layout,
+  Modal,
+  Divider
 } from 'antd';
 import React from 'react';
 import { Space, Tag } from 'antd';
 import type { TableProps } from 'antd';
+const { Sider, Content } = Layout;
+
 type SizeType = Parameters<typeof Form>[0]['size'];
 
 interface DataType {
@@ -29,6 +34,34 @@ interface DataType {
   address: string;
   tags: string[];
 }
+
+const columnsGioHang: TableProps<DataType>['columns'] = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    render: (text) => <a>{text}</a>,
+  },
+  {
+    title: 'Count',
+    dataIndex: 'count',
+    key: 'count',
+  },
+  {
+    title: 'Price',
+    dataIndex: 'price',
+    key: 'price',
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: (_, record) => (
+      <Space size="middle">
+        <a>Delete</a>
+      </Space>
+    ),
+  },
+];
 
 const columns: TableProps<DataType>['columns'] = [
   {
@@ -48,36 +81,16 @@ const columns: TableProps<DataType>['columns'] = [
     key: 'address',
   },
   {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
     title: 'Action',
     key: 'action',
     render: (_, record) => (
       <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
+        <a>Add</a>
       </Space>
     ),
   },
 ];
+const dataGioHang: DataType[] = [];
 
 const data: DataType[] = [
   {
@@ -103,6 +116,23 @@ const data: DataType[] = [
   },
 ];
 
+
+const layoutStyle = {
+  borderRadius: 10,
+  innerWidth: 100
+};
+const contentStyle: React.CSSProperties = {
+  background: '#FFFFFF',
+};
+
+const siderStyle: React.CSSProperties = {
+  background: '#FFFFFF',
+  height: '100%',
+  paddingLeft: 20,
+  display: "flex",
+};
+
+
 const NewBill = () => {
   const [componentSize, setComponentSize] = useState<SizeType | 'default'>('default');
 
@@ -111,44 +141,42 @@ const NewBill = () => {
   };
 
   return (
-    <Form
-      labelCol={{ span: 4 }}
-      wrapperCol={{ span: 14 }}
-      layout="horizontal"
-      initialValues={{ size: componentSize }}
-      onValuesChange={onFormLayoutChange}
-      size={componentSize as SizeType}
-      style={{ maxWidth: 600 }}
-    >
-      <Form.Item label="Input">
-        <Input />
-      </Form.Item>
-      <Form.Item label="Select">
-        <Select>
-          <Select.Option value="demo">Demo</Select.Option>
-        </Select>
-      </Form.Item>
-      <Form.Item label="TreeSelect">
-        <TreeSelect
-          treeData={[
-            { title: 'Light', value: 'light', children: [{ title: 'Bamboo', value: 'bamboo' }] },
-          ]}
-        />
-      </Form.Item>
-      <Form.Item label="Nguoi ban"> "user.username"
-         </Form.Item>
-      <Form.Item label="Ngay Ban ">
-        <DatePicker />
-      </Form.Item>
-      <Table<DataType> columns={columns} dataSource={data} />;
-      <Form.Item label="Switch" valuePropName="checked">
-        <Switch />
-      </Form.Item>
-      <Form.Item label="Button">
-        <Button>Button</Button>
-      </Form.Item>
-    </Form>
-  );
-};
+    <Layout style={layoutStyle}>
+      <Content style={contentStyle}>
+        <Input width="330%" enterKeyHint='search'></Input>
+        <Divider>Gio Hang</Divider>
+        <Table<DataType>
+          columns={columnsGioHang}
+          bordered dataSource={dataGioHang} />
+        <Table<DataType> columns={columns} dataSource={data} size='small'
+          title={() => 'Sản Phầm'} />
+      </Content>
+      <Sider width="35%" style={siderStyle}>
+        <Form
+          layout="horizontal"
+          initialValues={{ size: componentSize }}
+          onValuesChange={onFormLayoutChange}
+          size={componentSize as SizeType}
+          style={{ width: "100%" }}>
+          <Form.Item label="Tổng tiền">"1 triệu"</Form.Item>
+
+          <Form.Item label="Tổng tiền">"1 triệu"</Form.Item>
+          <Form.Item label="Người Bán"> "user.username"</Form.Item>
+          <Form.Item label="Ngày Bán"> 20/10/2024</Form.Item>
+
+
+          <Form.Item label="PTTT">
+            <Select>
+              <Select.Option value="1">Tiền mặt</Select.Option>
+              <Select.Option value="2">Chuyển Khoản</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item ><Button>Thanh Toán</Button></Form.Item>
+        </Form>
+      </Sider>
+    </Layout >
+
+  )
+}
 
 export default NewBill
