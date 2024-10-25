@@ -72,7 +72,7 @@ const Router = () => {
                     </Route>
                     <Route path='order/bill'>
                         <Route index element={<ManageBill />} />
-                        <Route path=':id/update' element={<ManageBillUpdate />} />
+                        {/* <Route path=':id/update' element={<ManageBillUpdate />} /> */}
                     </Route>
                     <Route path='order/bill/newbill'>
                         <Route index element={<NewBill />} />

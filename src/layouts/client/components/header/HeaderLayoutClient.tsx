@@ -27,7 +27,7 @@ export default function HeaderLayoutClient() {
         <div className="bg-white">
             <nav className="2xl:container 2xl:mx-auto sm:py-6">
                 <div className="flex justify-between ">
-                    <Link to="/" className="text-2xl text-gray-700 dark:text-gray-400 font-bold">SNEAKERCUTI</Link>
+                    <Link to="/" className="text-2xl text-gray-700 dark:text-gray-400 font-bold">SAFERIDE</Link>
                     <div className="hidden sm:flex flex-row items-center space-x-6">
                         <ul className="hidden lg:w-auto lg:space-x-12 lg:items-center lg:flex ">
                             <li className="pb-3">

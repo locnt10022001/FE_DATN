@@ -22,13 +22,13 @@ const CheckoutCart = ({ totalPrice }: any) => {
                 const loading = await message.loading({ content: 'loading!', key, duration: 2 })
                 if (loading) {
                     const BillData: any = {
-                        name: value.name,
-                        email: value.email,
-                        phone: value.phone,
-                        address: value.address,
-                        total: totalPrice + 5.00,
-                        items: cartItems,
-                        User_id: userParse._id
+                        // name: value.name,
+                        // email: value.email,
+                        // phone: value.phone,
+                        // address: value.address,
+                        // total: totalPrice + 5.00,
+                        // items: cartItems,
+                        // User_id: userParse._id
                     }
                     if (BillData) {
                         try {

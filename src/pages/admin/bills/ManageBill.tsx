@@ -5,12 +5,13 @@ import { Link } from 'react-router-dom';
 import { GetAllBill, RemoveBill } from '../../../services/bill';
 import IBill from '../../../types/bill';
 import ListItemsOrder from '../../../components/ListItemsOrder';
+import AddMoreBill from './AddNewBill';
 const ManageBill = () => {
   const [bills, setbills] = useState<IBill[]>([])
   useEffect(() => {
     GetAllBill().then(({ data }) => setbills(data))
   }, [])
-  const HandleRemoveBill = async (id: string) => {
+  const HandleRemoveBill = async (id: number) => {
     try {
       Modal.confirm({
         title: 'Confirm',
@@ -29,7 +30,7 @@ const ManageBill = () => {
             const response = await RemoveBill(id);
             if (response) {
               message.success('Deleted successfully!', 3);
-              const dataNew = bills.filter((data) => data._id !== id);
+              const dataNew = bills.filter((data) => data.id !== id);
               setbills(dataNew);
             }
           }, 2000);
@@ -44,39 +45,34 @@ const ManageBill = () => {
   };
   const columns = [
     {
-      title: 'stt',
+      title: 'STT',
       dataIndex: 'index',
       key: 'index'
     },
     {
-      title: 'name',
-      dataIndex: 'name',
-      key: 'name'
+      title: 'Ma HD',
+      dataIndex: 'maHoaDon',
+      key: 'maHoaDon'
     },
     {
-      title: 'email',
-      dataIndex: 'email',
-      key: 'email'
+      title: 'Loai HD',
+      dataIndex: 'loaiHD',
+      key: 'loaiHD'
     },
     {
-      title: 'phone',
-      dataIndex: 'phone',
-      key: 'phone'
+      title: 'Tong Tien',
+      dataIndex: 'tien',
+      key: 'tien'
     },
     {
-      title: 'address',
-      dataIndex: 'address',
-      key: 'address'
+      title: 'So Tien Da Tra',
+      dataIndex: 'soTien',
+      key: 'soTien'
     },
     {
-      title: 'created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt'
-    },
-    {
-      title: 'total',
-      dataIndex: 'total',
-      key: 'total'
+      title: 'Ngay Tao',
+      dataIndex: 'ngayTao',
+      key: 'ngayTao'
     },
     {
       title: 'items',
@@ -87,20 +83,20 @@ const ManageBill = () => {
         </>
     },
     {
-      title: 'status',
-      dataIndex: 'status',
-      key: 'status'
+      title: 'Trang Thai',
+      dataIndex: 'tt',
+      key: 'tt'
     },
     {
-      title: 'action',
-      key: 'action',
+      title: 'Hanh Dong',
+      key: 'hanhDong',
       render: (item: IBill) =>
         <>
-          <Link to={`/admin/order/bill/${item.key}/update`}>
+          <Link to={`/admin/order/bill/${item.id}/update`}>
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><EditOutlined /></button>
           </Link>
           <button type="button"
-            onClick={() => HandleRemoveBill(item.key)}
+            onClick={() => HandleRemoveBill(item.id)}
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
             <DeleteOutlined />
           </button>
@@ -111,24 +107,24 @@ const ManageBill = () => {
   const listData = bills.map((item: IBill, index: number) => {
     return {
       index: index + 1,
-      key: item._id,
-      name: item.name,
-      email: item.email,
-      phone: item.phone,
-      address: item.address,
-      createdAt: item.createdAt,
-      total: item.total,
-      items: item.items,
-      status: item.status
+      maHoaDon: item.ma,
+      loaiHD: item.loaiHoaDon,
+      tien: item.tongTien,
+      soTien: item.soTienDaTra,
+      ngayTao: item.ngayTao,
+      tt: item.tt,
     }
   })
   if (listData.length == 0)
     return (
-      <Empty description={false} />
+      <>
+        <AddMoreBill />
+        <Empty description={false} />
+      </>
     )
   return (
     <>
-  <Link to={"newbill"}><Button> Add New Bill</Button> </Link>
+      <AddMoreBill />
       <Table
         columns={columns}
         dataSource={listData}
@@ -141,4 +137,4 @@ const ManageBill = () => {
   )
 }
 
-export default ManageBill
+export default ManageBill 

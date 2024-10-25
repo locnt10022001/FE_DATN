@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const intansce = axios.create({
-  baseURL: "https://backend-project-0gio.onrender.com/api"
+  baseURL: "http://localhost:8080"
 })
 // Add a request interceptor
 intansce.interceptors.request.use(function (config) {

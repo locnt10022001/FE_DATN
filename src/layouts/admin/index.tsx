@@ -25,7 +25,7 @@ const LayoutAdmin: React.FC = () => {
         <SidebarLayoutAdmin />
         <MainLayoutAdmin />
       </Layout>
-      <Footer style={{ textAlign: 'center' }}>MANAGE SNEAKER-CUTI</Footer>
+      <Footer style={{ textAlign: 'center' }}>Safe Ride</Footer>
     </Layout>
   );
 };

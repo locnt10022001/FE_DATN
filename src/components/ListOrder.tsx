@@ -10,7 +10,7 @@ type Props = {
 
 const ListOrder = (props: Props) => {
     const navigate = useNavigate()
-    const Remove = (id: string) => {
+    const Remove = (id: number) => {
         try {
             Modal.confirm({
                 title: 'Confirm',
@@ -47,7 +47,7 @@ const ListOrder = (props: Props) => {
             {props.orders.map((bill) => {
                 return (
                     <div
-                        key={bill._id}
+                        key={bill.id}
                         className="max-w-md mx-auto bg-white shadow-md rounded-md overflow-hidden mb-5"
                     >
                         <div className="px-6 py-4">
@@ -59,7 +59,7 @@ const ListOrder = (props: Props) => {
                             </p>
                             <p className="text-gray-700 mb-2">
                                 Your order number is:{" "}
-                                <span className="font-semibold">{bill.orderCode}</span>
+                                <span className="font-semibold">{bill.ma}</span>
                             </p>
                             <p className="text-gray-700 mb-2">
                                 An invoice has been sent to your email address.
@@ -68,7 +68,7 @@ const ListOrder = (props: Props) => {
                         <div className="px-6 py-4 border-t border-gray-300">
                             <ListItemsOrder bill={bill} />
                         </div>
-                        <div className="px-6 py-4 border-t border-gray-300">
+                        {/* <div className="px-6 py-4 border-t border-gray-300">
                             <h3 className="text-xl font-bold text-gray-800 mb-2">
                                 Shipping Address
                             </h3>
@@ -96,7 +96,7 @@ const ListOrder = (props: Props) => {
                                 </button>
                             )}
 
-                        </div>
+                        </div> */}
                     </div>
                 );
             })}

@@ -30,13 +30,13 @@ const ManageBillUpdate = () => {
   };
   if (!orders) return null;
   const initial = {
-    _id: orders._id,
-    name: orders.name,
-    email: orders.email,
-    phone: orders.phone,
-    address: orders.address,
-    items: orders.items,
-    status: orders.status,
+    // _id: orders._id,
+    // name: orders.name,
+    // email: orders.email,
+    // phone: orders.phone,
+    // address: orders.address,
+    // items: orders.items,
+    // status: orders.status,
   };
 
   return (

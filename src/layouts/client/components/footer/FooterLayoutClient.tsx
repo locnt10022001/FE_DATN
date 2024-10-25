@@ -4,7 +4,7 @@ const FooterLayoutClient = () => {
         <footer className="border-t mt-12 pt-12 pb-32 px-4 lg:px-0">
             <div className="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
                 <div className="md:w-1/2">
-                    <span className="text-sm font-bold text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="/" className="hover:underline">SNEAKERCUTI</a> All Rights Reserved.</span>
+                    <span className="text-sm font-bold text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="/" className="hover:underline">SAFERIDE</a> All Rights Reserved.</span>
                 </div>
                 <div className="mt-4 md:mt-0 md:text-right">
                     <ul className="w-full space-x-8 md:space-x-12 items-center flex flex-wrap text-center md:text-right">
