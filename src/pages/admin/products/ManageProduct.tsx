@@ -1,161 +1,130 @@
-import { Table, Empty, Image, message, Modal } from 'antd';
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
-import { IProduct, ISizes } from '../../../types/product';
-import { GetAllProduct, RemoveProduct } from '../../../services/product';
-import { Link } from 'react-router-dom';
-import ManagementProductCreate from './ManageProductCreate';
-import { useEffect, useState } from 'react';
+// src/pages/ProductManagement.jsx
+import React, { useState } from "react";
+import { Table, Button, Modal, Form, Input, Popconfirm } from "antd";
+import { IProducts } from "../../../types/products";
 
-const ManagementProduct = () => {
-  const [products, setProducts] = useState<IProduct[]>([])
-  useEffect(() => {
-    GetAllProduct().then(({ data }) => setProducts(data))
-  }, [])
+const ProductManagement = () => {
+  const [product, setProducts] = useState<IProducts[]>([]);
 
-  const HandleRemoveProduct = async (id: string) => {
-    try {
-      Modal.confirm({
-        title: 'Confirm',
-        content: 'Are you sure you want to delete this about?',
-        okText: 'Yes',
-        cancelText: 'No',
-        okButtonProps: {
-          className: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" // áp dụng lớp CSS
-        },
-        onOk: async () => {
-          const loading = message.loading({ content: 'Loading...', duration: 0 });
-          setTimeout(async () => {
-            if (loading) {
-              loading();
-            }
-            const response = await RemoveProduct(id);
-            if (response) {
-              message.success('Deleted successfully!', 3);
-              const dataNew = products.filter((data) => data._id !== id);
-              setProducts(dataNew);
-            }
-          }, 2000);
-        },
-        onCancel: () => {
-          message.success('Canceled!');
-        },
-      });
-    } catch (error:any) {
-          message.error(error.response.data.message,5);
-    }
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<IProducts>();
+
+  const [form] = Form.useForm();
+
+  const showAddModal = () => {
+    setEditingProduct(undefined);
+    form.resetFields();
+    setIsModalVisible(true);
   };
+
+  const showEditModal = (product: React.SetStateAction<IProducts | undefined>) => {
+    setEditingProduct(product);
+    form.setFieldsValue(product);
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setProducts(product.filter((product: { id: number; }) => product.id !== id));
+  };
+
+  const handleOk = () => {
+    form.validateFields().then((values) => {
+      if (editingProduct) {
+        // Edit product
+        setProducts((prev) =>
+          prev.map((product) =>
+            product.id === editingProduct.id ? { ...product, ...values } : product
+          )
+        );
+      } else {
+        // Add new product
+        setProducts((prev) => [
+          ...prev,
+          { id: Date.now(), ...values },
+        ]);
+      }
+      setIsModalVisible(false);
+    });
+  };
+
   const columns = [
+    { title: 'ID', dataIndex: 'id', key: 'id' },
+    { title: 'Tên Sản Phẩm', dataIndex: 'ten', key: 'ten' },
+    { title: 'Mô Tả', dataIndex: 'moTa', key: 'moTa' },
+    { title: 'Số Lượng', dataIndex: 'soluong', key: 'soluong' },
+    { title: 'Trạng Thái', dataIndex: 'tt', key: 'tt' },
     {
-      title: 'stt',
-      dataIndex: 'index',
-      key: 'index',
-      width: 5
-    },
-    {
-      title: 'name',
-      dataIndex: 'name',
-      render: (t: any, r: any) => (
-        <Link to={`/products/${r.key}`} target="_blank">{`${r.name}`}</Link>
-      ),
-    },
-    {
-      title: 'price',
-      dataIndex: 'price',
-      key: 'price',
-    },
-    {
-      title: 'salePrice',
-      dataIndex: 'salePrice',
-      key: 'salePrice',
-      width: 5
-    },
-    {
-      title: "sizes",
-      dataIndex: "sizes",
-      render: (t: any, r: any) => (
-        <div className="flex">
-          <div className="border border-gray-300">
-            <div className="border-b border-gray-300 font-semibold  px-3">
-              Size
-            </div>
-            <div className="font-semibold text-center">quantity</div>
-          </div>
-          {r.sizes.map((item: any, index: number) => (
-            <div
-              key={index}
-              className="border-b border-t border-r border-gray-300"
-            >
-              <div className="border-b border-gray-300 font-semibold px-3">
-                {item.size}
-              </div>
-              <div className="text-center">{item.quantity}</div>
-            </div>
-          ))}
-        </div>
-      ),
-    },
-    {
-      title: 'images',
-      key: 'images',
-      render: (item: IProduct) =>
+      title: "Hành động",
+      key: "action",
+      render: (_: any, product: IProducts) => (
         <>
-          <Image.PreviewGroup
+          <Button
+            type="link"
+            onClick={() => showEditModal(product)}
           >
-            {item.images.map((image: string, index: number) => (
-              <Image style={{ width: 50, height: 50 }} src={image} alt="" key={index} />
-            ))}
-          </Image.PreviewGroup>
-        </>,
-    },
-    {
-      title: 'action',
-      render: (item: IProduct) =>
-        <>
-          <Link to={`/admin/products/${item.key}/update`}>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><EditOutlined /></button>
-          </Link>
-          <button type="button"
-            onClick={() => HandleRemoveProduct(item.key)}
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-            <DeleteOutlined />
-          </button>
+            Sửa
+          </Button>
+          <Popconfirm
+            title="Bạn có chắc chắn muốn xóa?"
+            onConfirm={() => handleDelete(product.id)}
+            okText="Có"
+            cancelText="Không"
+          >
+            <Button type="link" danger>
+              Xóa
+            </Button>
+          </Popconfirm>
         </>
+      ),
     },
   ];
 
-  const listData = Array.from(products).map((item: IProduct, index: number) => ({
-    key: item._id,
-    index: index + 1,
-    href: '/product/' + item._id,
-    name: item.name,
-    price: item.price,
-    salePrice: item.salePrice,
-    quantity: item.quantity,
-    sizes: item.sizes,
-    images: item.images,
-    description: item.description,
-    createdAt: item.createdAt,
-    tags: item.tags,
-    CategoryId: item.CategoryId,
-  }));
-
-  if (listData.length == 0)
-    return (
-      <Empty description={false} />
-    )
   return (
-    <>
-      <ManagementProductCreate />
+    <div style={{ padding: 24 }}>
+      <h2>Quản lý sản phẩm</h2>
+      <Button type="primary" onClick={showAddModal} style={{ marginBottom: 16 }}>
+        Thêm sản phẩm
+      </Button>
       <Table
+        dataSource={product}
         columns={columns}
-        dataSource={listData}
-        bordered
-        pagination={{
-          pageSize: 4, showQuickJumper: true
-        }}
+        rowKey="id"
+        pagination={{ pageSize: 5 }}
       />
-    </>
-  )
-}
+      <Modal
+        title={editingProduct ? "Sửa sản phẩm" : "Thêm sản phẩm"}
+        visible={isModalVisible}
+        onOk={handleOk}
+        onCancel={() => setIsModalVisible(false)}
+        okText="Lưu"
+        cancelText="Hủy"
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ name: "", price: 0 }}
+        >
+          <Form.Item
+            name="name"
+            label="Tên sản phẩm"
+            rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="price"
+            label="Giá"
+            rules={[
+              { required: true, message: "Vui lòng nhập giá!" },
+              { type: "number", min: 0, message: "Giá phải là số dương!" },
+            ]}
+          >
+            <Input type="number" />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
+};
 
-export default ManagementProduct
+export default ProductManagement;

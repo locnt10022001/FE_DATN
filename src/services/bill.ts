@@ -1,30 +1,61 @@
-import IBill from "../types/bill"
+import IBill, { ThanhToanRequest, ThemSanPhamRequest } from "../types/bill"
+import { OrderRequest } from "../types/order"
 import Customer from "../types/saferidebill"
-import intansce from "./intansce"
+import intance from "./intansce"
 
 export const GetAllBill = () => {
-    return intansce.get('/hoa-don/danh-sach')
+    return intance.get('/hoa-don/danh-sach')
+}
+
+export const GetOnlineBill = () => {
+    return intance.get('/hoadonchitiet/danh-sach/2')
 }
 
 export const GetOneBill = (id: string) => {
-    return intansce.get('/bill/' + id)
+    return intance.get('/hoadonchitiet/' + id)
+}
+export const GetOneOnlineBill = (id: string) => {
+    return intance.get('/ban-hang/hoa-don/' + id)
 }
 
+export const GetProductOnBill = (id: string) => {
+    return intance.get('/ban-hang/hoa-don/' + id + '/sanpham')
+}
+
+export const AddProductToCart = (productId: number, idTaiKhoan: number, soLuong: number) => {
+    return intance.post('/online/gio-hang/them-san-pham?productId=' + productId + '&idTaiKhoan=' + idTaiKhoan + '&soLuong=' + soLuong);
+};
+
+export const AddProductToBill = (request: ThemSanPhamRequest) => {
+    return intance.post('/ban-hang/them-san-pham', request);
+};
+
+export const SubmitOrderConfirmation = (request: OrderRequest) => {
+    return intance.post('/online/dat-hang', request);
+};
+export const UpdateBillStatus = (id: number, status: string) => {
+    return intance.post('/online/trang-thai?hoaDonId=' + id + '&trangThaiMoi=' + status);
+};
+
+
+export const ProcessPayment = (request: ThanhToanRequest) => {
+    return intance.post('/ban-hang/thanh-toan', request);
+};
 
 export const GetBillByUser = (user_id: string) => {
-    return intansce.get('/bill/order/' + user_id)
+    return intance.get('/bill/order/' + user_id)
 }
 
 export const CreateBill = (data: IBill) => {
-    return intansce.post(`/bill`, data);
+    return intance.post(`/bill`, data);
 }
 
 export const AddNewBill = () => {
-    return intansce.post(`/ban-hang/them-hoa-don`);
+    return intance.post(`/ban-hang/them-hoa-don`);
 }
 
 export const UpdateBill = (data: IBill) => {
-    return intansce.put(`/bill/${data.id}`, data, {
+    return intance.put(`/bill/${data.id}`, data, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -32,7 +63,7 @@ export const UpdateBill = (data: IBill) => {
 }
 
 export const RemoveBill = (_id: number) => {
-    return intansce.delete(`/bill/${_id}`, {
+    return intance.delete(`/bill/${_id}`, {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },

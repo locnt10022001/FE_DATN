@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AddBill from '../../../types/bill';
 import { useState } from 'react';
 import { PlusOutlined } from "@ant-design/icons"
-import { AddNewBill } from '../../../services/bill';
+import { AddNewBill, GetAllBill } from '../../../services/bill';
 import { Customer, ItemBillState } from '../../../types/saferidebill';
 const AddMoreBill= () => {
   const navigate = useNavigate()
@@ -28,8 +28,8 @@ const AddMoreBill= () => {
         const response = await AddNewBill();
         console.log(response);
         setIsModalOpen(false);
-        message.success('Successfully create bill', 3);
-        navigate('/admin/order/bill')
+        message.success('Tao Hoa Don Thanh Cong.', 3);
+        window.location.reload()
       }
 
     } catch (error: any) {
@@ -39,7 +39,7 @@ const AddMoreBill= () => {
   };
   return (
     <>
-      <Button className="rounded-md flex space-x-2 font-normal text-sm leading-3 text-indigo-700 bg-white border border-indigo-700 focus:outline-none focus:bg-gray-200 hover:bg-gray-200 duration-150 justify-center items-center" onClick={showModal}>
+      <Button className="rounded-md flex space-x-2 font-normal text-sm leading-3 text-indigo-700 bg-white border border-indigo-700 focus:outline-none focus:bg-gray-200 hover:bg-gray-200 duration-150 justify-center items-center" style={{ marginBottom: 20 }}  onClick={showModal}>
       Them Don Hang
       </Button>
       <Modal open={isModalOpen} footer={null} onOk={handleOk} onCancel={handleCancel}>

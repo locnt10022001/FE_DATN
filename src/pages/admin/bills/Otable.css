@@ -1,0 +1,16 @@
+.custom-tabs .ant-tabs-tab {
+    background-color: #f0f2f5; 
+    border-radius: 8px;     
+    padding: 8px 16px;        
+    transition: all 0.3s ease; 
+  }
+  
+  .custom-tabs .ant-tabs-tab:hover {
+    background-color: #e6f7ff; 
+  }
+  
+  .custom-tabs .ant-tabs-tab-active {
+    background-color: #ffffff;
+    color: #ffffff;
+    font-weight: bold;
+  }

@@ -5,20 +5,30 @@ type Props = {
 }
 const ListItemsOrder = (props: Props) => {
     const [open, setOpen] = useState(false);
+    console.log(props)
+    if (props.bill.length == 0) {
+        <>
+            <button className='items-center' onClick={() => setOpen(true)}>
+                Xem san pham
+            </button>
+            <Modal title="items order" centered open={open} onOk={() => setOpen(false)} onCancel={() => setOpen(false)} width={700} footer={null}>
+                {props.bill.items.map((cart: any) => {
+                    return (
+                        <div key={cart._id} className="justify-between mb-6 rounded-lg bg-white p-6 shadow-md sm:flex sm:justify-start">
+                            Khong co san pham
+                        </div>
+                    )
+                })}
+            </Modal>
+        </>
+
+    }
     return (
         <>
             <button className='items-center' onClick={() => setOpen(true)}>
-                Click to view the product
+                Xem san pham
             </button>
-            <Modal
-                title="items order"
-                centered
-                open={open}
-                onOk={() => setOpen(false)}
-                onCancel={() => setOpen(false)}
-                width={700}
-                footer={null}
-            >
+            <Modal title="items order" centered open={open} onOk={() => setOpen(false)} onCancel={() => setOpen(false)} width={700} footer={null}>
                 {props.bill.items.map((cart: any) => {
                     return (
                         <div key={cart._id} className="justify-between mb-6 rounded-lg bg-white p-6 shadow-md sm:flex sm:justify-start">

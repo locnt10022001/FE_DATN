@@ -1,82 +1,254 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { removeFromCart } from '../../../redux/actions/cartActions';
-import EmptyCart from '../../../components/EmptyCart';
-import { Link } from 'react-router-dom';
-import CheckoutCart from '../../../components/CheckoutCart';
-import { AppDispatch, RootState } from '../../../redux/store';
-function CartPage() {
-    const dispatch = useDispatch<AppDispatch>();
-    const handleRemove = (id: string) => {
-        dispatch(removeFromCart(id));
+import React, { useState, useEffect } from 'react';
+import { Table, Checkbox, InputNumber, Button, Card, Row, Col, message, Modal, Select, Divider, Typography } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
+import { GetCartProduct } from '../../../services/cart';
+import { useNavigate } from 'react-router-dom';
+import { ProductDetails } from '../../../types/productdetails';
+const { Title } = Typography;
+
+const { Option } = Select;
+
+type Voucher = {
+    id: number;
+    code: string;
+    discount: number;
+};
+
+const vouchers: Voucher[] = [
+    { id: 1, code: 'DISCOUNT10', discount: 10 },
+    { id: 2, code: 'DISCOUNT20', discount: 20 },
+];
+
+const CartPage: React.FC = () => {
+    const [cartItems, setCartItems] = useState<ProductDetails[]>([]);
+    const [selectedItems, setSelectedItems] = useState<number[]>([]);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [currentItem, setCurrentItem] = useState<ProductDetails | null>(null);
+    const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
+
+    useEffect(() => {
+        GetCartProduct(1).then(({ data }) => {
+            setCartItems(data)
+        })
+    }, []);
+
+    const navigate = useNavigate();
+
+    const handleCheckout = () => {
+        const selectedProducts = cartItems.filter(item => selectedItems.includes(item.id));
+        const totalAmount = selectedProducts.reduce((sum, item) => sum + (item.donGia * item.sl), 0);
+        const orderInfo = {
+            products: selectedProducts,
+            totalAmount,
+            selectedVoucher: selectedVoucher?.code,
+        };
+
+        navigate('/checkout', { state: orderInfo });
     };
-    const cartItems = useSelector((state: RootState) => state.cart.cartItems);
-    const totalPrice = cartItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0);
+
+    const handleQuantityChange = (value: number, item: ProductDetails) => {
+        const newCartItems = cartItems.map(cartItem =>
+            cartItem.id === item.id ? { ...cartItem, quantity: value } : cartItem
+        );
+        setCartItems(newCartItems);
+    };
+
+    const handleDelete = (id: number) => {
+        const newCartItems = cartItems.filter(item => item.id !== id);
+        setCartItems(newCartItems);
+        setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+        message.success("Đã xóa sản phẩm khỏi giỏ hàng");
+    };
+
+    const handleSelectItem = (id: number, checked: boolean) => {
+        setSelectedItems(prev => checked ? [...prev, id] : prev.filter(itemId => itemId !== id));
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        setSelectedItems(checked ? cartItems.map(item => item.id) : []);
+    };
+
+    const handleVoucherSelect = (value: number) => {
+        const selected = vouchers.find(voucher => voucher.id === value) || null;
+        setSelectedVoucher(selected);
+    };
+
+    const handleOpenModal = (item: ProductDetails) => {
+        setCurrentItem(item);
+        setIsModalVisible(true);
+    };
+
+    const handleModalOk = () => {
+        if (currentItem) {
+            const newCartItems = cartItems.map(cartItem =>
+                cartItem.id === currentItem.id ? currentItem : cartItem
+            );
+            setCartItems(newCartItems);
+        }
+        setIsModalVisible(false);
+    };
+
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
+    };
+
+    const handleSizeChange = (size: string) => {
+        if (currentItem) {
+            setCurrentItem({ ...currentItem, });
+        }
+    };
+
+    const handleColorChange = (color: string) => {
+        if (currentItem) {
+            setCurrentItem({ ...currentItem, });
+        }
+    };
+
+    const totalAmount = selectedItems.reduce(
+        (sum, itemId) => {
+            const item = cartItems.find(item => item.id === itemId);
+            return sum + (item ? item.donGia * item.sl : 0);
+        },
+        0
+    );
+    const discountedAmount = selectedVoucher
+        ? totalAmount - (totalAmount * selectedVoucher.discount) / 100
+        : totalAmount;
+
+    const columns = [
+        {
+            title: <Checkbox onChange={e => handleSelectAll(e.target.checked)} />,
+            dataIndex: 'select',
+            render: (_: any, item: ProductDetails) => (
+                <Checkbox
+                    checked={selectedItems.includes(item.id)}
+                    onChange={e => handleSelectItem(item.id, e.target.checked)}
+                />
+            ),
+        },
+        {
+            title: 'Sản phẩm',
+            dataIndex: 'product',
+            render: (_: any, item: ProductDetails) => (
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <img src={item.anh} alt={item.idSanPham.ten} style={{ width: 80, height: 80, marginRight: 8 }} />
+                    <span>{item.idSanPham.ten}</span>
+                </div>
+            ),
+        },
+        {
+            title: '',
+            dataIndex: 'category',
+            render: (_: any, item: ProductDetails) => (
+                <Button type="link" onClick={() => handleOpenModal(item)}>
+                    Phân loại hàng:<br />
+                    {item.idKichThuoc.ten} - {item.idMauSac.ten}
+                </Button>
+            ),
+        },
+        {
+            title: 'Đơn giá',
+            dataIndex: 'price',
+            render: (_: any, item: ProductDetails) => `${item.donGia.toLocaleString()} đ`,
+        },
+        {
+            title: 'Số lượng',
+            dataIndex: 'quantity',
+            render: (_: any, item: ProductDetails) => (
+                <InputNumber
+                    min={1}
+                    value={item.sl}
+                    onChange={(value) => handleQuantityChange(value as number, item)}
+                />
+            ),
+        },
+        {
+            title: 'Thành tiền',
+            dataIndex: 'total',
+            render: (_: any, item: ProductDetails) => `${(item.donGia * item.sl).toLocaleString()} đ`,
+        },
+        {
+            title: 'Thao tác',
+            dataIndex: 'action',
+            render: (_: any, item: ProductDetails) => (
+                <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleDelete(item.id)}>
+                    Xóa
+                </Button>
+            ),
+        },
+    ];
+
     return (
         <>
-            {cartItems.length === 0 ? (
-                <EmptyCart />
-            ) : (
-                <div className="bg-gray-100 py-[80px]">
-                    <p className=" focus:outline-none px-4 mb-4 focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 font-normal text-base leading-4 text-gray-600"><Link to="/">Home</Link> / <Link to="/cart">cart</Link> / checkout</p>
-                    <h1 className="mb-10 text-center text-2xl font-bold">Cart Items</h1>
-                    <div className="mx-auto max-w-5xl justify-center px-6 md:flex md:space-x-6 xl:px-0">
-                        <div className="rounded-lg md:w-2/3">
-                            {cartItems.map((cart: any) => {
-                                return (
-                                    <div key={cart._id} className="justify-between mb-6 rounded-lg bg-white p-6 shadow-md sm:flex sm:justify-start">
-                                        <img
-                                            src={cart.image}
-                                            alt="product-image"
-                                            className="w-full rounded-lg sm:w-40"
-                                        />
-                                        <div className="sm:ml-4 sm:flex sm:w-full sm:justify-between">
-                                            <div className="mt-5 sm:mt-0">
-                                                <h2 className="text-lg font-bold text-gray-900">
-                                                    {cart.name}
-                                                </h2>
-                                                <p className="mt-1 text-xs text-gray-700">Size: {cart.size}</p>
-                                            </div>
-                                            <div className="mt-4 flex justify-between im sm:space-y-6 sm:mt-0 sm:block sm:space-x-6">
-                                                <div className="flex items-center border-gray-100">
-                                                    <p>
-                                                        Quantity: {cart.quantity}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center space-x-4">
-                                                    <p className="text-sm font-bold text-[red]">$
-                                                        {cart.price}
-                                                    </p>
-                                                    <button onClick={() => handleRemove(cart._id)}>
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth="1.5"
-                                                            stroke="currentColor"
-                                                            className="h-5 w-5 cursor-pointer duration-150 hover:text-red-500"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M6 18L18 6M6 6l12 12"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                        {/* checkout cart */}
-                        <CheckoutCart totalPrice={totalPrice} />
-                    </div>
-                </div>
-            )}
-        </>
+            <Title level={1}>Giỏ Hàng</Title>
+            <Divider />
+            <Row gutter={16}>
+                <Col span={16}>
+                    <Table
+                        columns={columns}
+                        dataSource={cartItems}
+                        rowKey="id"
+                        pagination={false}
+                        footer={() => (
+                            <div style={{ textAlign: 'left', padding: '8px 16px' }}>
+                                <Checkbox
+                                    onChange={e => handleSelectAll(e.target.checked)}
+                                    checked={selectedItems.length === cartItems.length && selectedItems.length > 0}>
+                                    Chọn tất cả
+                                </Checkbox>
+                                <span style={{ marginLeft: 16 }}>
+                                    Đã chọn ({selectedItems.length} sản phẩm)
+                                </span>
+                            </div>
+                        )}
+                    />
+                </Col>
+                <Col span={8}>
+                    <Card title="Thông tin thanh toán" bordered>
+                        <p>Tổng tiền hàng: {totalAmount.toLocaleString()} đ</p>
+                        <Select
+                            placeholder="Chọn voucher"
+                            onChange={handleVoucherSelect}
+                            style={{ width: '100%', marginBottom: 16 }}
+                        >
+                            {vouchers.map(voucher => (
+                                <Option key={voucher.id} value={voucher.id}>
+                                    {voucher.code} - Giảm {voucher.discount}%
+                                </Option>
+                            ))}
+                        </Select>
+                        {selectedVoucher && (
+                            <p>Áp dụng voucher "{selectedVoucher.code}": -{selectedVoucher.discount}%</p>
+                        )}
+                        <br />
+                        <p>Tổng thanh toán: {discountedAmount.toLocaleString()} đ</p>
+                        <Button type="default" block disabled={!selectedItems.length} onClick={handleCheckout}>
+                            Mua hàng ({selectedItems.length})
+                        </Button>
+                    </Card>
+                </Col>
+            </Row>
+            <Modal
+                title="Chọn kích cỡ và màu sắc"
+                visible={isModalVisible}
+                onOk={handleModalOk}
+                onCancel={handleModalCancel}
+                okButtonProps={{ type: 'default' }}
+                cancelButtonProps={{ danger: true }} >
+                <p>Kích cỡ:</p>
+                <Select value={currentItem?.idKichThuoc.ten} onChange={handleSizeChange} style={{ width: '100%' }}>
 
+                </Select>
+                <p style={{ marginTop: '16px' }}>Màu sắc:</p>
+                <Select value={currentItem?.idMauSac.ten} onChange={handleColorChange} style={{ width: '100%' }}>
+
+                </Select>
+            </Modal>
+        </>
     );
-}
+};
 
 export default CartPage;

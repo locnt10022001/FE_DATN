@@ -22,7 +22,6 @@ const ManageBillUpdate = () => {
         if (response)
           message.success(response.data.message, 3);
       }
-
       navigate('admin/order/bill');
     } catch (error: any) {
       message.error(error.response.data.message,5);

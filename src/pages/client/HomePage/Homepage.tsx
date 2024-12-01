@@ -1,135 +1,146 @@
+import { Carousel, Row, Col, Typography, Button, Card, message, Input, Select } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { Carousel, Input, message } from "antd";
-import { useState } from "react";
-import {
-  FindProductByPrice,
-  SearchProductByName,
-} from "../../../services/product";
-import { IProduct } from "../../../types/product";
 import { Link } from "react-router-dom";
-import ListProductByCategories from "../../../components/ListProductByCategories";
-import FilterProductByPrice from "../../../components/FilterProductByPrice";
-import SearchProduct from "../../../components/SearchProduct";
+import './home.css';
+import { useState, useEffect } from "react";
+import { SearchProductByName, GetAllProductDetail } from "../../../services/product";
+import { ProductDetails } from "../../../types/productdetails";
+import ItemProduct from "../../../components/ItemProduct";
+
+const { Title, Text } = Typography;
+const { Option } = Select;
+
 const Homepage = () => {
-  const [query, setQuery] = useState<any>();
-  const [products, setProducts] = useState<IProduct[]>([]);
+  const [query, setQuery] = useState<string>("");
+  const [products, setProducts] = useState<ProductDetails[]>([]);
+  const [sortOrder, setSortOrder] = useState<string>("asc");
+
   const handleSearch = async (value: string) => {
     try {
       setQuery(value);
       const response = await SearchProductByName(value);
-      message.success("Tìm kiếm sản phẩm thành công");
-      setProducts(response.data);
-    } catch (error: any) {
-      message.warning("Không tìm thấy dữ liệu");
+      if (response.data.length > 0) {
+        message.success("Tìm kiếm sản phẩm thành công");
+        setProducts(response.data);
+      } else {
+        message.warning("Không tìm thấy sản phẩm");
+      }
+    } catch (error) {
+      message.error("Lỗi tìm kiếm sản phẩm");
     }
   };
-  const [minPrice, setMinPrice] = useState<number>(0);
-  const [maxPrice, setMaxPrice] = useState<number>(0);
-  const handleFilter = async () => {
-    try {
-      setQuery([minPrice, maxPrice]);
-      const response = await FindProductByPrice(minPrice, maxPrice);
-      message.success("Tìm kiếm sản phẩm thành công");
-      setProducts(response.data);
-    } catch (error: any) {
-      message.warning("Không tìm thấy dữ liệu");
-    }
+
+  const handleSortChange = (value: string) => {
+    setSortOrder(value);
+    // const sortedProducts = [...products].sort((a, b) => {
+    //   if (value === "asc") {
+    //     return a.price - b.price;
+    //   } else {
+    //     return b.price - a.price;
+    //   }
+    // });
+    // setProducts(sortedProducts);
   };
+
+  // Load all products initially
+  useEffect(() => {GetAllProductDetail().then(({ data }) => {
+    setProducts(data);
+  });
+}, []);
+
   return (
-    <section className="py-20 pt-0 bg-gray-50 font-poppins dark:bg-gray-800 ">
-      <div className="banner">
-        <Carousel autoplay>
-          <img
-            src="https://theme.hstatic.net/1000376021/1000834008/14/slideshow_4.jpg?v=3691"
-            alt=""
-          />
-          <img
-            src="https://theme.hstatic.net/1000376021/1000834008/14/slideshow_5.jpg?v=3691"
-            alt=""
-          />
-          <img
-            src="https://theme.hstatic.net/1000376021/1000834008/14/slideshow_6.jpg?v=3691"
-            alt=""
-          />
-          <img
-            src="https://file.hstatic.net/1000376021/file/1920x720_copy_42b3f822c4ca4cd099bfb116931e6361.png"
-            alt=""
-          />
-        </Carousel>
+    <div className="container mx-auto mt-6">
+      <div className="search-bar mb-10">
+        <Input.Search
+          placeholder="Tìm kiếm sản phẩm..."
+          value={query}       
+          onChange={(e) => setQuery(e.target.value)}
+          onPressEnter={() => handleSearch(query)} />
       </div>
-      <div className=" py-4 mx-auto max-w-7xl lg:py-6 ">
-        <div className="p-4 mb-5 dark:border-gray-900 dark:bg-gray-900">
-          <nav id="store" className="w-full z-30 top-0 py-1">
-            <div className="w-full container flex justify-between items-center">
-              <Link
-                className="mr-4 uppercase tracking-wide no-underline hover:no-underline font-bold text-gray-800 text-xl "
-                to=""
-              >
-                Store
+
+      <Carousel autoplay className="mb-6 rounded-lg overflow-hidden shadow-lg">
+        <img src="banner1.jpg" alt="Banner 1" className="carousel-img" />
+        <img src="banner2.jpg" alt="Banner 2" className="carousel-img" />
+        <img src="banner3.jpg" alt="Banner 3" className="carousel-img" />
+        <img src="banner4.jpg" alt="Banner 4" className="carousel-img" />
+      </Carousel>
+
+      <Row gutter={[16, 16]} className="mb-8">
+        <Col xs={24} sm={8}>
+          <Card hoverable cover={<img alt="Mũ bảo hiểm" src="helmet.jpg" />} className="shadow-md">
+            <Title level={5} className="text-center">Mũ bảo hiểm</Title>
+            <div className="text-center">
+              <Link to="/collections/helmet">
+                <Button type="default">Xem ngay</Button>
               </Link>
-              <div className="flex items-center" id="store-nav-content">
-                <div className="relative flex items-center">
-                  <Input.Search
-                    className="w-full max-w-xs p-2 rounded-full bg-[#5765be] focus:bg-white"
-                    placeholder="search product"
-                    onSearch={handleSearch}
-                    enterButton={<SearchOutlined />}
-                  />
-                </div>
-              </div>
             </div>
-          </nav>
-        </div>
-        <div className="flex flex-wrap mb-24 -mx-3">
-          <div className="w-full pr-4 lg:w-1/4 lg:block">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <label className="text-gray-700 dark:text-gray-400 font-semibold mb-2">
-                  Min Price:
-                </label>
-                <input
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:border-transparent transition-colors"
-                  type="number"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(parseInt(e.target.value))}
-                />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card hoverable cover={<img alt="Phụ kiện" src="accessories.jpg" />} className="shadow-md">
+            <Title level={5} className="text-center">Phụ kiện</Title>
+            <div className="text-center">
+              <Link to="/collections/accessories">
+                <Button type="default">Khám phá</Button>
+              </Link>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card hoverable cover={<img alt="Khuyến mãi" src="sale.jpg" />} className="shadow-md">
+            <Title level={5} className="text-center">Khuyến mãi</Title>
+            <div className="text-center">
+              <Link to="/collections/sale">
+                <Button type="default">Xem ngay</Button>
+              </Link>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+      <div className="mt-8 mb-12">
+        <Title level={3} className="text-center mb-6">Bộ sưu tập nổi bật</Title>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12}>
+            <Card hoverable cover={<img alt="Collection 1" src="collection1.jpg" />} className="shadow-md">
+              <Title level={5}>Dòng mũ cao cấp</Title>
+              <Text>Bảo vệ tối ưu và phong cách độc đáo.</Text>
+              <div className="text-center mt-4">
+                <Link to="/collections/premium">
+                  <Button type="default">Khám phá</Button>
+                </Link>
               </div>
-              <div className="flex flex-col bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <label className="text-gray-700 dark:text-gray-400 font-semibold mb-2">
-                  Max Price:
-                </label>
-                <input
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:border-transparent transition-colors"
-                  type="number"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(parseInt(e.target.value))}
-                />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Card hoverable cover={<img alt="Collection 2" src="collection2.jpg" />} className="shadow-md">
+              <Title level={5}>Dòng phụ kiện hiện đại</Title>
+              <Text>Phụ kiện cá tính và tiện ích.</Text>
+              <div className="text-center mt-4">
+                <Link to="/collections/accessories">
+                  <Button type="default">Xem chi tiết</Button>
+                </Link>
               </div>
-              <div className="flex flex-col bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
-                  onClick={handleFilter}
-                >
-                  Filter
-                </button>
-              </div>
+            </Card>
+          </Col>
+        </Row>
+
+        <div className="mt-8 mb-12">
+          <Title level={2} className="text-center mb-6">Tất cả sản phẩm</Title>
+          <div className="filter-section ml-3 mb-6">
+            <div className="sort-by">
+              <Select
+                defaultValue="asc"
+                style={{ width: 200 }}
+                onChange={handleSortChange}>
+                <Option value="asc">Giá: Thấp đến Cao</Option>
+                <Option value="desc">Giá: Cao đến Thấp</Option>
+              </Select>
             </div>
           </div>
-          <div className="w-full px-3 lg:w-3/4">
-            {query ? (
-              <FilterProductByPrice productsByPrice={products} />
-            ) : (
-              <ListProductByCategories />
-            )}
-            {!query ? (
-              <SearchProduct products={products} />
-            ) : (
-              <ListProductByCategories />
-            )}
-          </div>
+          <ItemProduct products={products} />
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

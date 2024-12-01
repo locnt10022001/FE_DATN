@@ -11,8 +11,8 @@ const HeaderLayoutAdmin = () => {
     >
       <div className="flex justify-between items-center flex-1">
         <Link to="/admin" className="flex items-center gap-[12px] h-[57px] w-[57px]">
-          <img src="/anhhtus-logo_2.png" alt="logo" className="h-full w-full object-cover" />
-          Dashboard
+          <img src="https://res.cloudinary.com/dymocu98b/image/upload/f_auto,q_auto/g3xoxs50pukmdve1ucfb" alt="logo" className="h-full w-full object-cover" />
+          DASHBOARD
         </Link>
 
         <div className="!w-[500px] gap-x-2 flex justify-center items-center">
@@ -28,7 +28,7 @@ const HeaderLayoutAdmin = () => {
 
         <div>
           <Typography.Title level={5} className="!mb-0 !text-white cursor-pointer">
-            Admin quản trị
+            ADMIN
           </Typography.Title>
         </div>
       </div>

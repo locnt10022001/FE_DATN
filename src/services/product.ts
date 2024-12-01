@@ -1,7 +1,13 @@
 import { IProduct } from "../types/product"
 import intansce from "./intansce"
 export const GetAllProduct = () => {
-    return intansce.get('/products')
+    return intansce.get('/sanpham/danhsach')
+}
+export const GetAllProductDetail = () => {
+    return intansce.get('/spchitiet/danhsach')
+}
+export const GetProductById = (id:number) => {
+    return intansce.get('/spchitiet/'+id)
 }
 export const GetProductSale = () => {
     return intansce.get('/products/sale')
@@ -9,7 +15,7 @@ export const GetProductSale = () => {
 export const SearchProductByName = (name: string) => {
     return intansce.get('/products/search?name=' + name)
 }
-export const FindProductByPrice = (min:number,max:number) => {
+export const FindProductByPrice = (min: number, max: number) => {
     return intansce.get(`/products/filter/price?minPrice=${min}&maxPrice=${max}&sortType=desc`)
 }
 export const FilterProductByCategory = (id: string) => {

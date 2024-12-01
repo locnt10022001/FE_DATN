@@ -30,7 +30,7 @@ const ListProductDetail = (props: Props) => {
         const loading = await message.loading({ content: 'loading!', key, duration: 2 })
         if (loading) {
             message.success('add to cart successfully')
-            dispatch(addToCart(cartData));
+            // dispatch(addToCart(cartData));
         }
     };
     return (

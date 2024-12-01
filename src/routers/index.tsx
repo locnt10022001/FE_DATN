@@ -21,12 +21,15 @@ import Management from "../pages/admin/dashboard/Management";
 import ManageHashtag from "../pages/admin/hashtags/ManageHashtag";
 import ManageHashtagUpdate from "../pages/admin/hashtags/ManageHashtagUpdate";
 import ManageBill from "../pages/admin/bills/ManageBill";
-import ManageBillUpdate from "../pages/admin/bills/ManageBillUpdate";
+import { OnlineBillDetails, OrderTable } from "../pages/admin/bills";
 import ManageAbout from "../pages/admin/abouts/ManageAbout";
 import ManageAboutUpdate from "../pages/admin/abouts/ManageAboutUpdate";
 import NotFoundPage from "../pages/NotFoundPage";
 import ProfilesPage from "../pages/client/profiles/Profiles";
-import NewBill from "../pages/admin/bills/NewBill";
+import UpdateBill from "../pages/admin/bills/UpdateBill";
+import ProductDetail from "../components/ProductDetail";
+import OrderConfirmation from "../components/OrderConfirmation";
+import OrderSuccess from "../components/SuccessPage";
 
 const Router = () => {
     return (
@@ -36,8 +39,9 @@ const Router = () => {
                     <Route index element={<Homepage />} />
                     <Route path='products'>
                         <Route index element={<ProductPage />} />
-                        <Route path=':id' element={<ProductDetailPage />} />
+                        <Route path=':id' element={<ProductDetail />} />
                     </Route>
+                    <Route path='success' element={<OrderSuccess />} />
                     <Route path='products/sales'>
                         <Route index element={<ProductSale />} />
                     </Route>
@@ -46,6 +50,9 @@ const Router = () => {
                     </Route>
                     <Route path='order/bill'>
                         <Route index element={<OrderPage />} />
+                    </Route>
+                    <Route path='checkout'>
+                        <Route index element={<OrderConfirmation />} />
                     </Route>
                     <Route path='contacts' element={<ContactPage />} />
                     <Route path='profile' element={<ProfilesPage />} />
@@ -72,10 +79,11 @@ const Router = () => {
                     </Route>
                     <Route path='order/bill'>
                         <Route index element={<ManageBill />} />
-                        {/* <Route path=':id/update' element={<ManageBillUpdate />} /> */}
+                        <Route path=':id/update' element={<UpdateBill />} />
                     </Route>
-                    <Route path='order/bill/newbill'>
-                        <Route index element={<NewBill />} />
+                    <Route path='order/onlinebill'>
+                        <Route index element={<OrderTable />} />
+                        <Route path=':id/update' element={<OnlineBillDetails />} />
                     </Route>
                     <Route path='comments'>
                         <Route index element={<ManageComment />} />
