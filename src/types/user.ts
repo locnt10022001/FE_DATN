@@ -4,12 +4,17 @@ interface IUser {
     name: string,
     email: string,
     password: string,
-    role: "admin" | "member",
+    role: "Admin" | "User",
     createdAt?: Date;
     updatedAt?: Date;
     deletedAt?: Date | null,
 }
 export default IUser
+
+export interface LoginRequest {
+    tenDangNhap: string,
+    matKhau: string
+}
 
 
 export interface RegisterResponse {
@@ -24,10 +29,15 @@ export interface RegisterResponse {
     }
 }
 
+export interface UserLogin {
+    id: number,
+    role: "Admin" | "User",
+    email: string,
+    username: string,
+    name: string
+}
 
 export interface LoginResponse {
-    message: string;
-    accessToken: string;
-    refreshToken: string;
-    user: IUser
+    token: string;
+    user: UserLogin;
 }

@@ -3,17 +3,19 @@ import { Button, Form, Input, Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { message } from "antd"
 import { Signin } from '../../../services/auth';
-import IUser, { LoginResponse } from '../../../types/user';
+import IUser, { LoginRequest, LoginResponse } from '../../../types/user';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import ForgotPassword from '../ForgotPassword';
 import { AxiosResponse } from 'axios';
+import SignupPage from '../SignupPage';
+
 const SigninPage = () => {
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
-    const onFinish = async (value: IUser) => {
+    const onFinish = async (value: LoginRequest) => {
         if (isVerified == true) {
             const key = 'loading'
             if (value) {
@@ -24,10 +26,9 @@ const SigninPage = () => {
                         if (response) {
                             setIsModalOpen(false);
                             const data: any = response
-                            localStorage.setItem('accessToken', data.accessToken);
-                            localStorage.setItem('refreshToken', data.refreshToken);
-                            localStorage.setItem('user', JSON.stringify(data.user));
-                            message.success(data.message, 3);
+                            localStorage.setItem('accessToken', data.token);
+                            localStorage.setItem('user', JSON.stringify(data.user))
+                            message.success("Đăng nhập thành công", 3);
                             navigate('/');
                         }
                     }
@@ -64,19 +65,15 @@ const SigninPage = () => {
     return (
         <>
             <Button className="rounded-md flex space-x-2 w-24 h-10 font-normal text-sm leading-3 text-white bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-700 focus:bg-indigo-600 hover:bg-indigo-600 duration-150 justify-center items-center" onClick={showModalSignin}>
-                Signin
+                Đăng nhập
             </Button>
             <Modal footer={null} open={isModalOpen} onOk={handleOkSignin} onCancel={handleCancelSignin}>
                 <Form className="mt-[30px] mx-auto sm:w-[400px]" name="form_item_path" layout="vertical" onFinish={onFinish} autoComplete="off">
-                    <p tabIndex={0} role="heading" aria-label="Login to your account" className="text-2xl font-extrabold leading-6 text-gray-800">
-                        Login to your account
+                    <p tabIndex={0} role="heading" aria-label="Đăng nhập tài khoản của bạn" className="text-2xl font-extrabold leading-6 text-gray-800">
+                        Đăng nhập tài khoản của bạn
                     </p>
                     <p className="text-sm mt-4 font-medium leading-none text-gray-500">
-                        Dont have account?{" "}
-                        <span tabIndex={0} role="link" aria-label="Sign up here" className="text-sm font-medium leading-none underline text-gray-800 cursor-pointer">
-                            {" "}
-                            Sign up here
-                        </span>
+                        Bạn chưa có tài khoản? <SignupPage />
                     </p>
                     <button aria-label="Continue with google" role="button" className="focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-700 py-3.5 px-4 border rounded-lg border-gray-700 flex items-center w-full mt-10">
                         <svg width={19} height={20} viewBox="0 0 19 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -85,7 +82,7 @@ const SigninPage = () => {
                             <path d="M4.17667 11.9366C3.97215 11.3165 3.85378 10.6521 3.85378 9.96562C3.85378 9.27905 3.97215 8.6147 4.16591 7.99463L4.1605 7.86257L1.13246 5.44363L1.03339 5.49211C0.37677 6.84302 0 8.36005 0 9.96562C0 11.5712 0.37677 13.0881 1.03339 14.4391L4.17667 11.9366Z" fill="#FBBC05" />
                             <path d="M9.68807 3.85336C11.5073 3.85336 12.7344 4.66168 13.4342 5.33718L16.1684 2.59107C14.4892 0.985496 12.3039 0 9.68807 0C5.89885 0 2.62637 2.23672 1.0332 5.49214L4.16573 7.99466C4.95162 5.59183 7.12608 3.85336 9.68807 3.85336Z" fill="#EB4335" />
                         </svg>
-                        <p className="text-base font-medium ml-4 text-gray-700">Continue with Google</p>
+                        <p className="text-base font-medium ml-4 text-gray-700">Đăng nhập bằng Google</p>
                     </button>
                     <button aria-label="Continue with github" role="button" className="focus:outline-none  focus:ring-2 focus:ring-offset-1 focus:ring-gray-700 py-3.5 px-4 border rounded-lg border-gray-700 flex items-center w-full mt-4">
                         <svg width={21} height={20} viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -94,39 +91,38 @@ const SigninPage = () => {
                                 fill="#333333"
                             />
                         </svg>
-                        <p className="text-base font-medium ml-4 text-gray-700">Continue with Github</p>
+                        <p className="text-base font-medium ml-4 text-gray-700">Đăng nhập bằng Github</p>
                     </button>
                     <div className="w-full flex items-center justify-between py-5">
                         <hr className="w-full bg-gray-400" />
-                        <p className="text-base font-medium leading-4 px-2.5 text-gray-400">OR</p>
-                        <hr className="w-full bg-gray-400  " />
+                        <p className="text-base font-medium leading-4 px-2.5 text-gray-400">Hoặc</p>
+                        <hr className="w-full bg-gray-400" />
                     </div>
                     <Form.Item className='text-black font-bold'
-                        name="email"
-                        label="Email"
+                        name="tenDangNhap"
+                        label="Tên đăng nhập"
                         rules={[
                             {
-                                message: 'vui lòng nhập email!',
-                                required: true,
-                                type: 'email'
+                                message: 'Vui lòng nhập email!',
+                                required: true
                             },
                         ]}
                     >
-                        <Input className='font-mono border border-indigo-600 h-10' placeholder="nhập email" />
+                        <Input className='font-mono border border-indigo-600 h-10' placeholder="Nhập email" />
                     </Form.Item>
                     <Form.Item className='text-black font-bold'
-                        name="password"
-                        label="mật khẩu"
+                        name="matKhau"
+                        label="Mật khẩu"
                         rules={[
                             {
-                                message: 'vui lòng nhập password!',
+                                message: 'Vui lòng nhập mật khẩu!',
                                 required: true,
                                 min: 6
                             },
                         ]}
                     >
                         <Input.Password
-                            type='password' className='font-mono border border-indigo-600 h-10' placeholder="nhập password"
+                            type='password' className='font-mono border border-indigo-600 h-10' placeholder="Nhập mật khẩu"
                             iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                         />
                     </Form.Item>
@@ -144,9 +140,8 @@ const SigninPage = () => {
                     </Form.Item>
                     <Button
                         htmlType="submit"
-                        className="w-full h-[52px] text-center py-3 rounded bg-[#4a71c4] text-white hover:bg-green-dark focus:outline-none my-1"
-                    >
-                        Sign in
+                        className="w-full h-[52px] text-center py-3 rounded bg-[#4a71c4] text-white hover:bg-green-dark focus:outline-none my-1">
+                        Đăng nhập
                     </Button>
                     <div>
                         <ForgotPassword />

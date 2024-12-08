@@ -18,7 +18,7 @@ const ProductDetail = () => {
     const [selectedSize, setSelectedSize] = useState(null);
     const { id } = useParams<{ id: string }>();
     const productId = id ? parseInt(id, 10) : null;
-
+    const user = localStorage.getItem("user");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -45,15 +45,13 @@ const ProductDetail = () => {
         try {
             const key = "loading";
             message.loading({ content: "Đang thêm sản phẩm vào giỏ hàng...", key });
-            const accountId = 1;
+            const accountId = user ? JSON.parse(user).id : "";
             const response = await AddProductToCart(
                 product.idSanPham.id,
                 accountId,
                 quantity
             );
-
             console.log("Phản hồi API:", response);
-
             message.success({ content: "Thêm sản phẩm vào giỏ hàng thành công.", key, duration: 3 });
             window.location.reload();
         } catch (error) {
@@ -181,8 +179,6 @@ const ProductDetail = () => {
                     </Card>
                 </Col>
             </Row>
-
-            {/* Product Description and Reviews */}
             <div className="product-info-tabs mt-8">
                 <Tabs defaultActiveKey="1">
                     <TabPane tab="Chi tiết sản phẩm" key="1">
@@ -191,6 +187,7 @@ const ProductDetail = () => {
                         </Card>
                     </TabPane>
                     <TabPane tab="Đánh giá" key="2">
+                        Comming soon...
                         {/* {product.reviews.map((review, index) => (
               <div key={index} className="review">
                 <Text strong>{review.user}</Text>

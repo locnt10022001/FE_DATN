@@ -7,6 +7,7 @@ import { Button, Form, Input, Radio, Table, Layout, Divider, Modal, message } fr
 import { GetAllProduct } from '../../../services/product';
 import { IProducts } from '../../../types/products';
 import { ProductOnBill } from '../../../types/productonbill';
+import { BillResponse } from '../../../types/billresponse';
 
 const { Sider, Content } = Layout;
 type SizeType = Parameters<typeof Form>[0]['size'];
@@ -32,7 +33,7 @@ const siderStyle: React.CSSProperties = {
 
 const UpdateBill = () => {
   const { id }: string | any = useParams();
-  const [orders, setOrders] = useState<IBill>();
+  const [orders, setOrders] = useState<BillResponse>();
   const [dataSP, setDataSP] = useState<IProducts[]>([]);
   const [dataGH, setDataGH] = useState<ProductOnBill[]>([]);
   const [filteredDataSP, setFilteredDataSP] = useState<IProducts[]>([]);
@@ -46,7 +47,7 @@ const UpdateBill = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  const totalAmount = Number(orders?.tongTien || 0);
+  const totalAmount = Number(orders?.hoaDon.tongTien || 0);
 
   useEffect(() => {
     if (id) {
@@ -135,13 +136,13 @@ const UpdateBill = () => {
 
   const handleModalOk = async () => {
     if (selectedProduct) {
-      if (!orders?.ma) {
+      if (!orders?.hoaDon.ma) {
         console.error('Hoa don khong ton tai!');
         return;
       }
 
       const request: ThemSanPhamRequest = {
-        maHoaDon: orders.ma,
+        maHoaDon: orders.hoaDon.ma,
         sanPhamId: selectedProduct.id,
         soLuong: quantity,
       };
@@ -189,13 +190,13 @@ const UpdateBill = () => {
 
   const change = customerPaid - totalAmount > 0 ? customerPaid - totalAmount : 0;
   const handlePayment = async () => {
-    if (!orders?.ma) {
+    if (!orders?.hoaDon.ma) {
       console.error('Hoa don khong ton tai!');
       return;
     }
 
     const request: ThanhToanRequest = {
-      maHoaDon: orders.ma,
+      maHoaDon: orders.hoaDon.ma,
       soTienKhachTra: customerPaid,
     };
 
@@ -220,7 +221,7 @@ const UpdateBill = () => {
       <Content style={contentStyle}>
 
         <Divider>Giỏ hàng</Divider>
-        <Table columns={columnsGH} size='middle' dataSource={listDataGH} pagination={{ pageSize: 10, showQuickJumper: false, hideOnSinglePage: true, }} style={{ height: '50%' }} />
+        <Table columns={columnsGH} size='middle' dataSource={listDataGH} pagination={{ pageSize: 5, showQuickJumper: false, hideOnSinglePage: true, }} style={{ height: '33%' }} />
         <Divider>Sản phẩm</Divider>
         <Input
           width="330%"
@@ -228,7 +229,7 @@ const UpdateBill = () => {
           placeholder="Nhập tên sản phẩm"
           value={searchValue}
           onChange={handleSearch} />
-        <Table columns={columns} dataSource={listDataSP} size='small' pagination={{ pageSize: 10, showQuickJumper: true, hideOnSinglePage: true, }} style={{ height: '50%' }} />
+        <Table columns={columns} dataSource={listDataSP} size='small' pagination={{ pageSize: 5, showQuickJumper: true, hideOnSinglePage: true, }} style={{ height: '50%' }} />
       </Content>
       <Sider width="30%" style={siderStyle}>
         <Divider>THÔNG TIN HOÁ ĐƠN</Divider>
@@ -238,10 +239,10 @@ const UpdateBill = () => {
           initialValues={{ size: componentSize }}
           onValuesChange={({ size }) => setComponentSize(size)}
           style={{}}>
-          <Form.Item label="Mã hoá đơn" style={{ marginBottom: 20 }}>{orders?.ma}</Form.Item>
-          <Form.Item label="Người Bán" style={{ marginBottom: 20 }}>{orders?.idTaiKhoan.ten}</Form.Item>
-          <Form.Item label="Ngày Bán" style={{ marginBottom: 20 }}>{orders?.ngayTao}</Form.Item>
-          <Form.Item label="Tổng tiền" style={{ marginBottom: 20 }}>{orders?.formattedGia}</Form.Item>
+          <Form.Item label="Mã hoá đơn" style={{ marginBottom: 20 }}>{orders?.hoaDon.ma}</Form.Item>
+          <Form.Item label="Người Bán" style={{ marginBottom: 20 }}>{orders?.hoaDon.idTaiKhoan.ten}</Form.Item>
+          <Form.Item label="Ngày Bán" style={{ marginBottom: 20 }}>{orders?.hoaDon.ngayTao}</Form.Item>
+          <Form.Item label="Tổng tiền" style={{ marginBottom: 20 }}>{orders?.hoaDon.formattedGia}</Form.Item>
           <Form.Item label="PTTT" style={{ marginBottom: 20 }}>
             <Radio.Group onChange={handlePaymentChange}>
               <Radio value="TM">Tiền mặt</Radio>

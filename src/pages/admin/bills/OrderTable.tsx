@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, message, Input, Tabs, Dropdown, Menu } from 'antd';
-import { DeleteOutlined, EditOutlined, DownOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, DownOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { format, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
 import './Otable.css';
-import { GetOnlineBill } from '../../../services/bill'; 
+import { GetOnlineBill } from '../../../services/bill';
 import IBill from '../../../types/bill';
 
 const { Search } = Input;
@@ -43,11 +43,12 @@ const OrderTable = () => {
 
     const formatOrderData = (orders: IBill[]) => {
         return orders.map((order, index) => ({
+            stt: index + 1,
             id: order.id,
             ma: order.ma,
-            loaiHD: parseInt(order.loaiHoaDon) === 1 ? "HD Tại Quầy" : "HD Online",
+            diaChi: order.diaChi,
             tien: order.tongTien,
-            soTien: order.soTienDaTra,
+            ghichu: order.ghiChu,
             ngayTao: order.ngayTao ? format(parseISO(order.ngayTao), 'HH:mm:ss dd-MM-yyyy') : '',
             tt: order.tt,
         }));
@@ -76,44 +77,38 @@ const OrderTable = () => {
         message.success(`Cập nhật trạng thái của hóa đơn ${record.ma} thành ${newStatus}`);
     };
 
-    const renderStatus = (record: any) => {
-        const validStatuses = statusOptions[record.tt] || [];
-        const menu = (
-            <Menu>
-                {validStatuses.map((status) => (
-                    <Menu.Item key={status} onClick={() => handleStatusChange(record, status)}>
-                        {status}
-                    </Menu.Item>
-                ))}
-            </Menu>
-        );
-
-        return validStatuses.length > 0 ? (
-            <Dropdown overlay={menu} trigger={['click']}>
-                <Button style={{ border: '1px solid #1890ff', borderRadius: 5 }}>
-                    {record.tt} <DownOutlined />
-                </Button>
-            </Dropdown>
-        ) : (
-            <Button disabled style={{ border: '1px solid #d9d9d9', borderRadius: 5 }}>
-                {record.tt}
-            </Button>
-        );
+    const btnHD = {
+        border: '1px solid',
+        borderRadius: 5,
+        backgroundColor: '#ffffff',
+        color: '#000',
+        
     };
 
-    const handleDelete = async (id: number) => {
-        try {
-            message.success(`Xóa đơn hàng ID ${id} thành công!`);
-        } catch (error) {
-            message.error("Lỗi khi xóa đơn hàng!");
-        }
+    const renderStatus = (record: any) => {
+        const statusColors: { [key: string]: string } = {
+            "Hoàn thành": "#52c41a", // Xanh lá
+            "Đang giao hàng": "#1890ff", // Xanh dương
+            "Đã xác nhận": "#13c2c2", // Màu cian
+            "Đã Hủy": "#ff4d4f",   // Màu đỏ
+        };
+        const buttonStyle = {
+            border: '1px solid',
+            borderRadius: 5,
+            backgroundColor: statusColors[record.tt] || '#ffffff',
+            color: statusColors[record.tt] ? '#fff' : '#000',
+        };
+
+        return <Button style={buttonStyle}>
+            {record.tt}
+        </Button>
     };
 
     const columns = [
         {
             title: 'STT',
-            dataIndex: 'id',
-            key: 'id',
+            dataIndex: 'stt',
+            key: 'stt',
         },
         {
             title: 'Mã HĐ',
@@ -121,9 +116,9 @@ const OrderTable = () => {
             key: 'ma',
         },
         {
-            title: 'Loại HĐ',
-            dataIndex: 'loaiHD',
-            key: 'loaiHD',
+            title: 'Địa Chỉ',
+            dataIndex: 'diaChi',
+            key: 'diaChi',
         },
         {
             title: 'Tổng Tiền',
@@ -131,9 +126,9 @@ const OrderTable = () => {
             key: 'tien',
         },
         {
-            title: 'Số Tiền Đã Trả',
-            dataIndex: 'soTien',
-            key: 'soTien',
+            title: 'Ghi Chú',
+            dataIndex: 'ghichu',
+            key: 'ghichu',
         },
         {
             title: 'Ngày Tạo',
@@ -143,18 +138,15 @@ const OrderTable = () => {
         {
             title: 'Trạng Thái',
             key: 'tt',
-            render: (text: string, record: any) => renderStatus(record),
+            render: (record: any) => renderStatus(record),
         },
         {
             title: 'Hành Động',
             render: (item: IBill) => (
-                <>
-                    <Link to={`/admin/order/onlinebill/${item.id}/update`}>
-                        <Button type="default" icon={<EditOutlined />} style={{ marginRight: 8 }}>
-                            Sửa
-                        </Button>
-                    </Link>
-                </>
+
+                <Link to={`/admin/order/onlinebill/${item.ma}/update`}>
+                    <Button style={btnHD}>Chi tiết</Button>
+                </Link >
             ),
         },
     ];
@@ -174,14 +166,14 @@ const OrderTable = () => {
                 <TabPane tab="Tất cả" key="Tất cả" />
                 <TabPane tab="Chờ xác nhận" key="Chờ xác nhận" />
                 <TabPane tab="Đã xác nhận" key="Đã xác nhận" />
-                <TabPane tab="Đang giao" key="Đang giao" />
-                <TabPane tab="Đã giao" key="Đã giao" />
+                <TabPane tab="Đang giao hàng" key="Đang giao hàng" />
                 <TabPane tab="Hoàn thành" key="Hoàn thành" />
                 <TabPane tab="Đã hủy" key="Đã hủy" />
                 <TabPane tab="Hoàn trả" key="Hoàn trả" />
             </Tabs>
 
             <Table
+                bordered
                 columns={columns}
                 dataSource={filteredData}
                 rowKey="id"

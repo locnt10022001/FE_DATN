@@ -83,7 +83,7 @@ const Router = () => {
                     </Route>
                     <Route path='order/onlinebill'>
                         <Route index element={<OrderTable />} />
-                        <Route path=':id/update' element={<OnlineBillDetails />} />
+                        <Route path=':ma/update' element={<OnlineBillDetails />} />
                     </Route>
                     <Route path='comments'>
                         <Route index element={<ManageComment />} />
@@ -95,8 +95,6 @@ const Router = () => {
                         <Route index element={<ManageUser />} />
                     </Route>
                 </Route>
-                <Route path='signin' element={<SigninPage />}></Route>
-                <Route path='signup' element={<SignupPage />}></Route>
                 <Route path='*' element={<NotFoundPage />}></Route>
             </Routes>
         </BrowserRouter>

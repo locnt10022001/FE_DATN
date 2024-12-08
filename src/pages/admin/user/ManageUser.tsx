@@ -71,7 +71,7 @@ const ManageUser = () => {
     {
       title: 'action',
       render: (item: IUser) => <>
-        {item.role === 'admin' ? <Button hidden>delete</Button> :
+        {item.role === 'Admin' ? <Button hidden>delete</Button> :
           <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onClick={() => HandleRemoveUser(item.key)} ><DeleteOutlined /></button>
         }
       </>

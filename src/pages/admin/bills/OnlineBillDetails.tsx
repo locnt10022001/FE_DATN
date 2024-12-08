@@ -10,13 +10,14 @@ import {
     CarOutlined,
     SmileOutlined
 } from '@ant-design/icons';
+import { BillResponse } from '../../../types/billresponse';
 
 const { Title, Text } = Typography;
 const { Step } = Steps;
 
 const OnlineBillDetails = () => {
-    const [orderDetails, setOrderDetails] = useState<BillDetail | null>(null);
-    const { id } = useParams();
+    const [orderDetails, setOrderDetails] = useState<BillResponse | null>(null);
+    const { ma } = useParams();
     const navigate = useNavigate();
 
     const statusSteps = [
@@ -42,9 +43,9 @@ const OnlineBillDetails = () => {
 
     useEffect(() => {
         const fetchOrderDetails = async () => {
-            if (id) {
+            if (ma) {
                 try {
-                    GetOneBill(id).then(({ data }) => setOrderDetails(data[0]));
+                    GetOneBill(ma).then(({ data }) => setOrderDetails(data[0]));
                 } catch (error: any) {
                     console.error('Error fetching order details:', error);
                     message.error('Không thể tải thông tin đơn hàng.');
@@ -52,7 +53,7 @@ const OnlineBillDetails = () => {
             }
         };
         fetchOrderDetails();
-    }, [id]);
+    }, [ma]);
 
     const handleBack = () => {
         navigate(-1);
@@ -61,9 +62,10 @@ const OnlineBillDetails = () => {
     const handleUpdateStatus = async (newStatus: string) => {
         if (orderDetails) {
             try {
-                await UpdateBillStatus(orderDetails.idHoaDon.id, newStatus);
+                await UpdateBillStatus(orderDetails.hoaDon.id, newStatus);
                 message.success(`Cập nhật trạng thái thành công: ${newStatus}`);
-                setOrderDetails({ ...orderDetails, tt: newStatus });
+                setOrderDetails({ ...orderDetails, tt: newStatus })
+                window.location.reload()
             } catch (error) {
                 console.error('Error updating order status:', error);
                 message.error('Không thể cập nhật trạng thái đơn hàng.');
@@ -72,7 +74,7 @@ const OnlineBillDetails = () => {
     };
 
     const renderActionButtons = () => {
-        switch (orderDetails?.idHoaDon.tt) {
+        switch (orderDetails?.hoaDon.tt) {
             case 'Chờ xác nhận' || 'Chưa xác nhận':
                 return (
                     <>
@@ -146,11 +148,11 @@ const OnlineBillDetails = () => {
         );
     }
 
-    const listDataGH = Array.isArray(orderDetails.idSPCT) ? orderDetails.idSPCT.map((item: BillDetail) => {
+    const listDataGH = Array.isArray(orderDetails.chiTietList) ? orderDetails.chiTietList.map((item: BillDetail) => {
         return {
             imageUrl: item.idSPCT.anh,
             name: item.idSPCT.idSanPham.ten,
-            quantity: item.idSPCT.sl,
+            quantity: item.sl,
             price: item.idSPCT.donGia,
             totalPrice: item.idSPCT.donGia * item.sl,
         };
@@ -167,7 +169,7 @@ const OnlineBillDetails = () => {
             </Row>
             <Divider />
             <Steps
-                current={getCurrentStep(orderDetails.idHoaDon.tt)}
+                current={getCurrentStep(orderDetails.hoaDon.tt)}
                 style={{ marginBottom: '20px' }}>
                 {statusSteps.map((step) => (
                     <Step
@@ -195,31 +197,31 @@ const OnlineBillDetails = () => {
                             <Col span={10}>
                                 <Text strong>Mã đơn hàng:</Text>
                             </Col>
-                            <Col span={14}>{orderDetails.id}</Col>
+                            <Col span={14}>{orderDetails.hoaDon.ma}</Col>
                         </Row>
                         <Row style={{ marginBottom: '10px' }}>
                             <Col span={10}>
                                 <Text strong>Tên khách hàng:</Text>
                             </Col>
-                            <Col span={14}>{orderDetails.idHoaDon.idTaiKhoan.ten}</Col>
+                            <Col span={14}>{orderDetails.hoaDon.idTaiKhoan.ten}</Col>
                         </Row>
                         <Row style={{ marginBottom: '10px' }}>
                             <Col span={10}>
                                 <Text strong>Địa chỉ:</Text>
                             </Col>
-                            <Col span={14}>{orderDetails.idHoaDon.diaChi}</Col>
+                            <Col span={14}>{orderDetails.hoaDon.diaChi}</Col>
                         </Row>
                         <Row style={{ marginBottom: '10px' }}>
                             <Col span={10}>
                                 <Text strong>Số điện thoại:</Text>
                             </Col>
-                            <Col span={14}>{orderDetails.idHoaDon.idTaiKhoan.sdt}</Col>
+                            <Col span={14}>{orderDetails.hoaDon.idTaiKhoan.sdt}</Col>
                         </Row>
                         <Row style={{ marginBottom: '10px' }}>
                             <Col span={10}>
                                 <Text strong>Thanh toán:</Text>
                             </Col>
-                            <Col span={14}>{orderDetails.formattedTongTien}</Col>
+                            <Col span={14}>{orderDetails.hoaDon.formattedGia}</Col>
                         </Row>
                         <Divider />
                         <Row>
@@ -228,7 +230,7 @@ const OnlineBillDetails = () => {
                             </Col>
                             <Col span={14}>
                                 <Title level={4} style={{ color: 'green' }}>
-                                    {orderDetails.formattedTongTien}
+                                    {orderDetails.hoaDon.formattedGia}
                                 </Title>
                             </Col>
                         </Row>

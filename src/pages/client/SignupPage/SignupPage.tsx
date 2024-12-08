@@ -6,7 +6,7 @@ import { Signup } from '../../../services/auth';
 import IUser from '../../../types/user';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-const SignupPage = () => {
+const SignupPage = () =>{
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,25 +54,25 @@ const SignupPage = () => {
     return (
         <>
             <Button className="rounded-md flex space-x-2 w-24 h-10 font-normal text-sm leading-3 text-indigo-700 bg-white border border-indigo-700 focus:outline-none focus:bg-gray-200 hover:bg-gray-200 duration-150 justify-center items-center" onClick={showModalSignup}>
-                Signup
+                Đăng ký
             </Button>
             <Modal open={isModalOpen} footer={null} onOk={handleOkSignup} onCancel={handleCancelSignup}>
                 <Form className="mt-[30px] mx-auto sm:w-[400px]" name="form_item_path" layout="vertical" onFinish={onFinish} autoComplete="off">
-                    <p tabIndex={0} role="heading" aria-label="Login to your account" className="text-2xl font-extrabold leading-6 text-gray-800 mb-8">
-                        signup to your account
+                    <p tabIndex={0} role="heading" aria-label="Đăng ký tài khoản" className="text-2xl font-extrabold leading-6 text-gray-800 mb-8">
+                        Đăng ký tài khoản
                     </p>
                     <Form.Item className='text-black font-bold'
                         rules={[
                             {
-                                message: 'vui lòng nhập name!',
+                                message: 'Vui lòng nhập tên!',
                                 required: true,
                                 min: 3
                             },
                         ]}
                         name="name"
-                        label="name"
+                        label="Họ và tên"
                     >
-                        <Input className='font-mono border border-indigo-600 h-10' placeholder="nhập name" />
+                        <Input className='font-mono border border-indigo-600 h-10' placeholder="Nhập họ và tên" />
                     </Form.Item>
                     <Form.Item className='text-black font-bold'
                         name="email"
@@ -85,37 +85,37 @@ const SignupPage = () => {
                             },
                         ]}
                     >
-                        <Input className='font-mono border border-indigo-600 h-10' placeholder="nhập email" />
+                        <Input className='font-mono border border-indigo-600 h-10' placeholder="Nhập email" />
                     </Form.Item>
                     <Form.Item className='text-black font-bold'
                         name="password"
-                        label="mật khẩu"
+                        label="Mật khẩu"
                         rules={[
                             {
-                                message: 'vui lòng nhập password!',
+                                message: 'Vui lòng nhập mật khẩu!',
                                 required: true,
                                 min: 6
                             },
                         ]}
                     >
                         <Input.Password
-                            type='password' className='font-mono border border-indigo-600 h-10' placeholder="nhập password"
+                            type='password' className='font-mono border border-indigo-600 h-10' placeholder="Nhập mật khẩu"
                             iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                         />
                     </Form.Item>
                     <Form.Item className='text-black font-bold'
                         name="confirmpassword"
-                        label="nhập lại mật khẩu"
+                        label="Nhập lại mật khẩu"
                         rules={[
                             {
-                                message: 'vui lòng nhập confirm password!',
+                                message: 'Vui lòng nhập lại mật khẩu!',
                                 required: true,
                                 min: 6
                             },
                         ]}
                     >
                         <Input.Password
-                            type='password' className='font-mono border border-indigo-600 h-10' placeholder="nhập password"
+                            type='password' className='font-mono border border-indigo-600 h-10' placeholder="Nhập lại mật khẩu"
                             iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                         />
                     </Form.Item>
@@ -134,8 +134,7 @@ const SignupPage = () => {
                     <Button
                         htmlType="submit"
                         className="w-full h-[52px] text-center py-3 rounded bg-[#4a71c4] text-white hover:bg-green-dark focus:outline-none my-1"
-                    >
-                        Sign up
+                    >Đăng ký
                     </Button>
                 </Form>
             </Modal>

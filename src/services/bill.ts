@@ -4,18 +4,18 @@ import Customer from "../types/saferidebill"
 import intance from "./intansce"
 
 export const GetAllBill = () => {
-    return intance.get('/hoa-don/danh-sach')
+    return intance.get('/api/admin/hoa-don/danh-sach/1')
 }
 
 export const GetOnlineBill = () => {
-    return intance.get('/hoadonchitiet/danh-sach/2')
+    return intance.get('/api/admin/hoa-don/danh-sach/2')
 }
 
-export const GetOneBill = (id: string) => {
-    return intance.get('/hoadonchitiet/' + id)
+export const GetOneBill = (ma: string) => {
+    return intance.get('/api/admin/hoa-don/chi-tiet/' + ma)
 }
-export const GetOneOnlineBill = (id: string) => {
-    return intance.get('/ban-hang/hoa-don/' + id)
+export const GetOneOnlineBill = (ma: string) => {
+    return intance.get('/api/admin/hoa-don/chi-tiet/' + ma)
 }
 
 export const GetProductOnBill = (id: string) => {
@@ -23,7 +23,18 @@ export const GetProductOnBill = (id: string) => {
 }
 
 export const AddProductToCart = (productId: number, idTaiKhoan: number, soLuong: number) => {
-    return intance.post('/online/gio-hang/them-san-pham?productId=' + productId + '&idTaiKhoan=' + idTaiKhoan + '&soLuong=' + soLuong);
+    return intance.post(`/online/gio-hang/them-san-pham`, null,
+        {
+            params: {
+                productId,
+                idTaiKhoan,
+                soLuong,
+            },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+        }
+    );
 };
 
 export const AddProductToBill = (request: ThemSanPhamRequest) => {

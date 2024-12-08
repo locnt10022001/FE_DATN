@@ -7,17 +7,17 @@ import MainLayoutAdmin from './components/main';
 const { Footer } = Layout;
 const LayoutAdmin: React.FC = () => {
   const navigate = useNavigate()
-  // const Logout = () => {
-  //   localStorage.clear()
-  //   window.location.reload()
-  // }
-  // const user: any = localStorage.getItem('user')
-  // const parseUser = JSON.parse(user)
-  // if (parseUser) {
-  //   parseUser.role === 'admin' ? console.log('ok') : navigate('/signin')
-  // } else {
-  //   navigate('/signin')
-  // }
+  const Logout = () => {
+    localStorage.clear()
+    window.location.reload()
+  }
+  const user: any = localStorage.getItem("user")
+  const parseUser = JSON.parse(user);
+  if (parseUser) {
+    parseUser.role === 'Admin' ? console.log('ok') : navigate('/signin')
+  } else {
+    navigate('/signin')
+  }
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <HeaderLayoutAdmin />

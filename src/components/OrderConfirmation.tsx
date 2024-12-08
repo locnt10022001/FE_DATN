@@ -33,6 +33,7 @@ const OrderConfirmation = () => {
     voucher: null,
   });
 
+  const user = localStorage.getItem("user");
   const [provinces, setProvinces] = useState<any[]>([]);
   const [districts, setDistricts] = useState<any[]>([]);
   const [wards, setWards] = useState<any[]>([]);
@@ -215,11 +216,7 @@ const OrderConfirmation = () => {
           <Card title="Thông Tin Người Nhận">
           <div style={{ height: '700px'}}>
             <Row>
-              <Text strong>Tên người nhận:</Text>
-              <Input
-                value={orderInfo.customerName}
-                onChange={(e) => setOrderInfo({ ...orderInfo, customerName: e.target.value })}
-              />
+              <Text strong>Tên người nhận: {user ? JSON.parse(user).name:""}</Text>
             </Row>
             <Row>
               <Text strong>Tỉnh/Thành phố:</Text>

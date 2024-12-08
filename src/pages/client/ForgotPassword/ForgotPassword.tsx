@@ -58,25 +58,25 @@ const ForgotPassword = () => {
     return (
         <>
             <p className='text-[14px]' onClick={showModalForgot}>
-                Forgot password
+                Quên mật khẩu
             </p>
             <Modal footer={null} open={isModalOpen} onOk={handleOkForgot} onCancel={handleCancelForgot}>
                 <Form className="mt-[30px] mx-auto sm:w-[400px]" name="form_item_path" layout="vertical" onFinish={onFinish} autoComplete="off">
-                    <h1 className="text-center mt-4 text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                        Forgot Password
+                    <h1 className="text-center mt-4 text-xl font-bold leading-tight tracking-tight md:text-2xl">
+                        Quên mật khẩu
                     </h1>
                     <MyFormItem className='text-black font-bold'
-                        name="email"
+                        name="Email"
                         label="Email"
                         rules={[
                             {
-                                message: 'vui lòng nhập email!',
+                                message: 'Vui lòng nhập email!',
                                 required: true,
                                 type: 'email'
                             },
                         ]}
                     >
-                        <Input className='border font-mono border-indigo-600 h-10' placeholder="nhập email" />
+                        <Input className='border font-mono border-indigo-600 h-10' placeholder="Nhập email" />
                     </MyFormItem>
                     <MyFormItem >
                         <ReCAPTCHA className=''
@@ -92,9 +92,8 @@ const ForgotPassword = () => {
                     </MyFormItem>
                     <Button
                         htmlType="submit"
-                        className="w-full h-[52px] text-center py-3 rounded bg-[#4a71c4] text-white hover:bg-green-dark focus:outline-none my-1"
-                    >
-                        Forgot password
+                        className="w-full h-[52px] text-center py-3 rounded bg-[#4a71c4] text-white hover:bg-green-dark focus:outline-none my-1">
+                        Quên mật khẩu
                     </Button>
                 </Form>
 

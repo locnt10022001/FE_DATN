@@ -4,10 +4,13 @@ import { DeleteOutlined } from '@ant-design/icons';
 import { GetCartProduct } from '../../../services/cart';
 import { useNavigate } from 'react-router-dom';
 import { ProductDetails } from '../../../types/productdetails';
+import EmptyCart from '../../../components/EmptyCart';
 const { Title } = Typography;
 
 const { Option } = Select;
 
+const user = localStorage.getItem("user");
+const userId = user ? JSON.parse(user).id : "";
 type Voucher = {
     id: number;
     code: string;
@@ -27,7 +30,7 @@ const CartPage: React.FC = () => {
     const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
 
     useEffect(() => {
-        GetCartProduct(1).then(({ data }) => {
+        GetCartProduct(userId).then(({ data }) => {
             setCartItems(data)
         })
     }, []);
@@ -183,70 +186,72 @@ const CartPage: React.FC = () => {
 
     return (
         <>
-            <Title level={1}>Giỏ Hàng</Title>
-            <Divider />
-            <Row gutter={16}>
-                <Col span={16}>
-                    <Table
-                        columns={columns}
-                        dataSource={cartItems}
-                        rowKey="id"
-                        pagination={false}
-                        footer={() => (
-                            <div style={{ textAlign: 'left', padding: '8px 16px' }}>
-                                <Checkbox
-                                    onChange={e => handleSelectAll(e.target.checked)}
-                                    checked={selectedItems.length === cartItems.length && selectedItems.length > 0}>
-                                    Chọn tất cả
-                                </Checkbox>
-                                <span style={{ marginLeft: 16 }}>
-                                    Đã chọn ({selectedItems.length} sản phẩm)
-                                </span>
-                            </div>
-                        )}
-                    />
-                </Col>
-                <Col span={8}>
-                    <Card title="Thông tin thanh toán" bordered>
-                        <p>Tổng tiền hàng: {totalAmount.toLocaleString()} đ</p>
-                        <Select
-                            placeholder="Chọn voucher"
-                            onChange={handleVoucherSelect}
-                            style={{ width: '100%', marginBottom: 16 }}
-                        >
-                            {vouchers.map(voucher => (
-                                <Option key={voucher.id} value={voucher.id}>
-                                    {voucher.code} - Giảm {voucher.discount}%
-                                </Option>
-                            ))}
+            {cartItems.length === 0 ? (
+                <EmptyCart />
+            ) : (
+                <><Title level={1}>Giỏ Hàng</Title><Divider />
+                    <Row gutter={16}>
+                        <Col span={16}>
+                            <Table
+                                columns={columns}
+                                dataSource={cartItems}
+                                rowKey="id"
+                                pagination={false}
+                                footer={() => (
+                                    <div style={{ textAlign: 'left', padding: '8px 16px' }}>
+                                        <Checkbox
+                                            onChange={e => handleSelectAll(e.target.checked)}
+                                            checked={selectedItems.length === cartItems.length && selectedItems.length > 0}>
+                                            Chọn tất cả
+                                        </Checkbox>
+                                        <span style={{ marginLeft: 16 }}>
+                                            Đã chọn ({selectedItems.length} sản phẩm)
+                                        </span>
+                                    </div>
+                                )} />
+                        </Col>
+                        <Col span={8}>
+                            <Card title="Thông tin thanh toán" bordered>
+                                <p>Tổng tiền hàng: {totalAmount.toLocaleString()} đ</p>
+                                <Select
+                                    placeholder="Chọn voucher"
+                                    onChange={handleVoucherSelect}
+                                    style={{ width: '100%', marginBottom: 16 }}
+                                >
+                                    {vouchers.map(voucher => (
+                                        <Option key={voucher.id} value={voucher.id}>
+                                            {voucher.code} - Giảm {voucher.discount}%
+                                        </Option>
+                                    ))}
+                                </Select>
+                                {selectedVoucher && (
+                                    <p>Áp dụng voucher "{selectedVoucher.code}": -{selectedVoucher.discount}%</p>
+                                )}
+                                <br />
+                                <p>Tổng thanh toán: {discountedAmount.toLocaleString()} đ</p>
+                                <Button type="default" block disabled={!selectedItems.length} onClick={handleCheckout}>
+                                    Mua hàng ({selectedItems.length})
+                                </Button>
+                            </Card>
+                        </Col>
+                    </Row><Modal
+                        title="Chọn kích cỡ và màu sắc"
+                        visible={isModalVisible}
+                        onOk={handleModalOk}
+                        onCancel={handleModalCancel}
+                        okButtonProps={{ type: 'default' }}
+                        cancelButtonProps={{ danger: true }}>
+                        <p>Kích cỡ:</p>
+                        <Select value={currentItem?.idKichThuoc.ten} onChange={handleSizeChange} style={{ width: '100%' }}>
+
                         </Select>
-                        {selectedVoucher && (
-                            <p>Áp dụng voucher "{selectedVoucher.code}": -{selectedVoucher.discount}%</p>
-                        )}
-                        <br />
-                        <p>Tổng thanh toán: {discountedAmount.toLocaleString()} đ</p>
-                        <Button type="default" block disabled={!selectedItems.length} onClick={handleCheckout}>
-                            Mua hàng ({selectedItems.length})
-                        </Button>
-                    </Card>
-                </Col>
-            </Row>
-            <Modal
-                title="Chọn kích cỡ và màu sắc"
-                visible={isModalVisible}
-                onOk={handleModalOk}
-                onCancel={handleModalCancel}
-                okButtonProps={{ type: 'default' }}
-                cancelButtonProps={{ danger: true }} >
-                <p>Kích cỡ:</p>
-                <Select value={currentItem?.idKichThuoc.ten} onChange={handleSizeChange} style={{ width: '100%' }}>
+                        <p style={{ marginTop: '16px' }}>Màu sắc:</p>
+                        <Select value={currentItem?.idMauSac.ten} onChange={handleColorChange} style={{ width: '100%' }}>
 
-                </Select>
-                <p style={{ marginTop: '16px' }}>Màu sắc:</p>
-                <Select value={currentItem?.idMauSac.ten} onChange={handleColorChange} style={{ width: '100%' }}>
-
-                </Select>
-            </Modal>
+                        </Select>
+                    </Modal>
+                </>
+            )}
         </>
     );
 };
