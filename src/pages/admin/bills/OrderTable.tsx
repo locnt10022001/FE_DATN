@@ -90,7 +90,7 @@ const OrderTable = () => {
             "Hoàn thành": "#52c41a", // Xanh lá
             "Đang giao hàng": "#1890ff", // Xanh dương
             "Đã xác nhận": "#13c2c2", // Màu cian
-            "Đã Hủy": "#ff4d4f",   // Màu đỏ
+            "Đã hủy": "#ff4d4f",   // Màu đỏ
         };
         const buttonStyle = {
             border: '1px solid',

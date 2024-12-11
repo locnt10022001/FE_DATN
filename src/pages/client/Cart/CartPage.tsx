@@ -143,7 +143,9 @@ const CartPage: React.FC = () => {
             title: '',
             dataIndex: 'category',
             render: (_: any, item: ProductDetails) => (
-                <Button type="link" onClick={() => handleOpenModal(item)}>
+                <Button type="link"
+                //  onClick={() => handleOpenModal(item)}
+                >
                     Phân loại hàng:<br />
                     {item.idKichThuoc.ten} - {item.idMauSac.ten}
                 </Button>

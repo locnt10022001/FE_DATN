@@ -1,203 +1,217 @@
-import { Row, Col, Typography, Button, Rate, InputNumber, Tabs, Card, message, Select, Divider } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+    Row,
+    Col,
+    Typography,
+    Button,
+    Rate,
+    InputNumber,
+    Tabs,
+    Card,
+    message,
+    Select,
+    Divider,
+} from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
-import { useState, useEffect, Key } from "react";
 import { Link, useParams } from "react-router-dom";
 import "./DetailProduct.css";
 import { GetProductById } from "../services/product";
-import { ProductDetails } from "../types/productdetails";
 import { AddProductToCart } from "../services/bill";
+import { ProductResponse } from "../types/productresponse";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 const { Option } = Select;
 
-const ProductDetail = () => {
-    const [product, setProduct] = useState<ProductDetails>();
-    const [quantity, setQuantity] = useState<number | null>(1);
-    const [selectedColor, setSelectedColor] = useState(null);
-    const [selectedSize, setSelectedSize] = useState(null);
+const ProductDetail: React.FC = () => {
+    const [productResponse, setProductResponse] = useState<ProductResponse | null>(null);
+    const [quantity, setQuantity] = useState<number>(1);
+    const [selectedColor, setSelectedColor] = useState<string | null>(null);
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [availableSizes, setAvailableSizes] = useState<string[]>([]);
     const { id } = useParams<{ id: string }>();
     const productId = id ? parseInt(id, 10) : null;
     const user = localStorage.getItem("user");
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
+    // Fetch product details
     useEffect(() => {
         if (productId !== null && !isNaN(productId)) {
             setLoading(true);
-            GetProductById(productId).then(({ data }) => {
-                setProduct(data);
-                setLoading(false);
-            })
-                .catch((err) => {
-                    setError(err.message || "Something went wrong");
+            GetProductById(productId)
+                .then(({ data }) => {
+                    setProductResponse(data);
+                    setLoading(false);
+                })
+                .catch(() => {
+                    setError("Lỗi khi tải sản phẩm.");
                     setLoading(false);
                 });
         }
-
     }, [productId]);
 
+    // Set initial color and size
+    useEffect(() => {
+        if (productResponse?.chiTietList && productResponse.chiTietList.length > 0) {
+            const uniqueColors = Array.from(
+                new Set(productResponse.chiTietList.map((detail) => detail.idMauSac.ten))
+            );
+            setSelectedColor(uniqueColors[0]);
+        }
+    }, [productResponse]);
+
+    // Update available sizes when color changes
+    useEffect(() => {
+        if (selectedColor && productResponse?.chiTietList) {
+            const sizesForColor = productResponse.chiTietList
+                .filter((detail) => detail.idMauSac.ten === selectedColor)
+                .map((detail) => detail.idKichThuoc.ten);
+            setAvailableSizes(sizesForColor);
+            setSelectedSize(sizesForColor[0] || null);
+        }
+    }, [selectedColor, productResponse]);
+
+    // Get details of selected product
+    const getProductDetails = () => {
+        if (!productResponse?.chiTietList) return null;
+        return productResponse.chiTietList.find(
+            (detail) => detail.idMauSac.ten === selectedColor && detail.idKichThuoc.ten === selectedSize
+        );
+    };
+
+    const selectedDetail = getProductDetails();
     const handleAddToCart = async () => {
-        if (!product || !quantity || !selectedColor || !selectedSize) {
+        if (!selectedDetail || quantity < 1) {
             message.error("Vui lòng chọn đầy đủ thông tin sản phẩm.");
             return;
         }
+
         try {
             const key = "loading";
             message.loading({ content: "Đang thêm sản phẩm vào giỏ hàng...", key });
             const accountId = user ? JSON.parse(user).id : "";
-            const response = await AddProductToCart(
-                product.idSanPham.id,
-                accountId,
-                quantity
-            );
-            console.log("Phản hồi API:", response);
+            await AddProductToCart(selectedDetail.id, accountId, quantity);
             message.success({ content: "Thêm sản phẩm vào giỏ hàng thành công.", key, duration: 3 });
             window.location.reload();
-        } catch (error) {
-            console.error("Lỗi thêm sản phẩm:", error);
-            message.error({ content: "Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng." });
+        } catch {
+            message.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
         }
     };
+
     const handleBuyNow = () => {
-        message.success("Proceeding to checkout");
+        message.success("Đang chuyển đến trang thanh toán...");
     };
 
     return (
         <div className="container mx-auto mt-6 detail-product-page">
             <Title level={2}>Chi Tiết Sản Phẩm</Title>
             <Divider />
-            <Row gutter={16}>
-                <Col xs={24} sm={13} md={13}>
-                    <Card hoverable className="product-gallery">
-                        <div className="image-container">
-                            {product?.anh ? (<img src={product.anh} alt={product.idSanPham.ten} className="main-product-image" />
-                            ) : (<span className="placeholder-text">Image Not Available</span>)}
-                        </div>
-                        <div className="thumbnail-gallery">
-                        </div>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={11} md={11} >
-                    <Card className="product-info-box">
-                        <Title level={4}>{product?.idSanPham.ten}</Title>
-                        <Rate allowHalf defaultValue={5} />
-                        <Text className="review-count">  ({100} reviews)</Text>
-                        <br />
-                        <div className="price-section mt-10 mb-10">
-                            <Title level={1} className="discounted-price">
-                                {`${product?.formattedGia}`}
-                            </Title>
-                        </div>
-                        <div className="color-size-section">
-                            <div className="form-row">
-                                <Text className="form-label">Màu sắc:</Text>
-                                <Select
-                                    placeholder="Chọn màu"
-                                    style={{ width: 120 }}
-                                    onChange={(value) => setSelectedColor(value)}>
-                                    {product?.idMauSac && (
-                                        <Option key={product.idMauSac.id} value={product.idMauSac.ten}>
-                                            {product.idMauSac.ten}
-                                        </Option>
-                                    )}
-                                </Select>
-                            </div>
-
-                            <div className="form-row">
-                                <Text className="form-label">Kích cỡ:</Text>
-                                <Select
-                                    placeholder="Chọn size"
-                                    style={{ width: 120 }}
-                                    onChange={(value) => setSelectedSize(value)}>
-                                    {product?.idKichThuoc && (
-                                        <Option key={product.idKichThuoc.id} value={product.idKichThuoc.ten}>
-                                            {product.idKichThuoc.ten}
-                                        </Option>
-                                    )}
-                                </Select>
-                            </div>
-
-                            <div className="form-row">
-                                <Text className="form-label">Số lượng:</Text>
-                                <InputNumber
-                                    min={1}
-                                    max={product?.sl}
-                                    value={quantity}
-                                    onChange={setQuantity}
-                                />
-                                <Text className="stock-count">(Còn lại: {product?.sl})</Text>
-                            </div>
-                        </div>
-
-                        <div className="button-group mt-20">
-                            <Button
-                                type="default"
-                                icon={<ShoppingCartOutlined />}
-                                onClick={handleAddToCart}
-                                className="add-to-cart-button"
-                                disabled={!selectedColor || !selectedSize} >
-                                Thêm vào giỏ hàng
-                            </Button>
-                            <Link
-                                to="/checkout"
-                                state={{
-                                    products: [
-                                        {
-                                            id: product?.id,
-                                            idSanPham: {
-                                                id: product?.idSanPham.id,
-                                                ten: product?.idSanPham.ten,
-                                            },
-                                            sl: quantity || 1,
-                                            donGia: product?.donGia || 0,
-                                            anh: product?.anh || "",
-                                            idMauSac: {
-                                                id: product?.idMauSac?.id || 0,
-                                                ten: selectedColor || "",
-                                            },
-                                            idKichThuoc: {
-                                                id: product?.idKichThuoc?.id || 0,
-                                                ten: selectedSize || "",
-                                            },
-                                            formattedGia: product?.formattedGia
-                                        },
-                                    ],
-                                    totalAmount: (product?.donGia || 0) * (quantity || 1),
-                                }}
-                            >
-                                <Button
-                                    type="primary"
-                                    danger
-                                    onClick={handleBuyNow}
-                                    className="buy-now-button"
-                                    disabled={!selectedColor || !selectedSize} >
-                                    Mua ngay
-                                </Button>
-                            </Link>
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
-            <div className="product-info-tabs mt-8">
-                <Tabs defaultActiveKey="1">
-                    <TabPane tab="Chi tiết sản phẩm" key="1">
-                        <Card>
-                            <p>{product?.moTaCT}</p>
-                        </Card>
-                    </TabPane>
-                    <TabPane tab="Đánh giá" key="2">
-                        Comming soon...
-                        {/* {product.reviews.map((review, index) => (
-              <div key={index} className="review">
-                <Text strong>{review.user}</Text>
-                <Rate allowHalf defaultValue={review.rating} disabled />
-                <p>{review.comment}</p>
-              </div>
-            ))} */}
-                    </TabPane>
-                </Tabs>
-            </div>
+            {loading ? (
+                <p>Loading...</p>
+            ) : error ? (
+                <p>{error}</p>
+            ) : (
+                <>
+                    <Row gutter={16}>
+                        <Col xs={24} sm={13} md={13}>
+                            <Card hoverable className="product-gallery" >
+                                {selectedDetail?.anh ? (
+                                    <img src={selectedDetail.anh} alt={selectedDetail.idSanPham.ten} />
+                                ) : (
+                                    <p>Không có hình ảnh</p>
+                                )}
+                            </Card>
+                        </Col>
+                        <Col xs={24} sm={11} md={11}>
+                            <Card className="product-info-box">
+                                <Title level={4}>{selectedDetail?.idSanPham.ten}</Title>
+                                <Rate allowHalf defaultValue={5} />
+                                <Text>({100} đánh giá)</Text>
+                                <Title level={1}>{selectedDetail?.formattedGia || "Loading..."}</Title>
+                                <div className="color-size-section">
+                                    <div className="form-row">
+                                        <Text>Màu sắc:</Text>
+                                        <Select
+                                            value={selectedColor}
+                                            style={{ width: 120 }}
+                                            onChange={(value) => setSelectedColor(value)}
+                                        >
+                                            {Array.from(
+                                                new Set(
+                                                    productResponse?.chiTietList.map((detail) => detail.idMauSac.ten)
+                                                )
+                                            ).map((color) => (
+                                                <Option key={color} value={color}>
+                                                    {color}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                    <div className="form-row">
+                                        <Text>Kích cỡ:</Text>
+                                        <Select
+                                            value={selectedSize}
+                                            style={{ width: 120 }}
+                                            onChange={(value) => setSelectedSize(value)}
+                                            disabled={!availableSizes.length}
+                                        >
+                                            {availableSizes.map((size) => (
+                                                <Option key={size} value={size}>
+                                                    {size}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                    <div className="form-row">
+                                        <Text>Số lượng:</Text>
+                                        <InputNumber
+                                            min={1}
+                                            max={selectedDetail?.sl}
+                                            value={quantity}
+                                            onChange={(value) => setQuantity(value || 1)}
+                                        />
+                                        <Text> (Còn lại: {selectedDetail?.sl || 0})</Text>
+                                    </div>
+                                </div>
+                                <div className="button-group mt-20">
+                                    <Button
+                                        type="default"
+                                        icon={<ShoppingCartOutlined />}
+                                        onClick={handleAddToCart}
+                                        disabled={!selectedColor || !selectedSize}
+                                    >
+                                        Thêm vào giỏ hàng
+                                    </Button>
+                                    <Link
+                                        to="/checkout"
+                                        state={{ products: [{ id: selectedDetail?.id, quantity, },], }}>
+                                        <Button
+                                            type="primary"
+                                            danger
+                                            onClick={handleBuyNow}
+                                            disabled={!selectedColor || !selectedSize} >
+                                            Mua ngay
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </Card>
+                        </Col>
+                    </Row>
+                    <div className="product-info-tabs mt-8">
+                        <Tabs defaultActiveKey="1">
+                            <TabPane tab="Chi tiết sản phẩm" key="1">
+                                <Card>
+                                    <p>{selectedDetail?.moTaCT || "Không có thông tin chi tiết."}</p>
+                                </Card>
+                            </TabPane>
+                            <TabPane tab="Đánh giá" key="2">
+                                <p>Đang cập nhật...</p>
+                            </TabPane>
+                        </Tabs>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

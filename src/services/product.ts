@@ -6,8 +6,8 @@ export const GetAllProduct = () => {
 export const GetAllProductDetail = () => {
     return intansce.get('/spchitiet/danhsach')
 }
-export const GetProductById = (id:number) => {
-    return intansce.get('/spchitiet/'+id)
+export const GetProductById = (id: number) => {
+    return intansce.get('/sanpham/' + id)
 }
 export const GetProductSale = () => {
     return intansce.get('/products/sale')

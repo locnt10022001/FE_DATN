@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from 'antd';
 import { useSelector } from 'react-redux';
-import { ShoppingCartOutlined, UserOutlined, LogoutOutlined, InfoCircleOutlined, ShoppingOutlined } from "@ant-design/icons"
+import { ShoppingCartOutlined, UserOutlined, LogoutOutlined, InfoCircleOutlined, ShoppingOutlined, LineChartOutlined } from "@ant-design/icons"
 import SignupPage from "../../../../pages/client/SignupPage";
 import SigninPage from "../../../../pages/client/SigninPage";
 import { RootState } from "../../../../redux/store";
@@ -19,6 +19,10 @@ export default function HeaderLayoutClient() {
         setShowDropdown(!showDropdown);
     }
 
+    const AdminLink = () => {
+        const role = user ? JSON.parse(user).role : "";
+        return role === "Admin" ? <Link to="/admin" className="block px-4 py-2 text-gray-800 hover:bg-gray-200"> <LineChartOutlined /> Quản lý</Link> : null;
+    };
     async function handleLogout() {
         localStorage.removeItem("user");
         await message.warning("Đã đăng xuất", 2, () => { });
@@ -70,15 +74,16 @@ export default function HeaderLayoutClient() {
                                 {showDropdown && (
                                     <div className="absolute right-0 mt-2 bg-white shadow-md rounded-md overflow-hidden z-10 w-60">
                                         <Title className="block px-4 py-2" level={4}>{userName}</Title>
+                                        <AdminLink />
                                         <Link
                                             to="/profile"
                                             className="block px-4 py-2 text-gray-800 hover:bg-gray-200">
-                                            <InfoCircleOutlined /> Thông tin tài khoản
+                                            <InfoCircleOutlined /> Tài khoản
                                         </Link>
                                         <Link
                                             to="/order/bill"
                                             className="block px-4 py-2 text-gray-800 hover:bg-gray-200" >
-                                            <ShoppingOutlined /> Đơn hàng của tôi
+                                            <ShoppingOutlined /> Đơn hàng
                                         </Link>
                                         <button
                                             onClick={handleLogout}

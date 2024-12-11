@@ -68,40 +68,25 @@ const ProductManagement = () => {
 
   const columns: Array<ColumnType<ProductTableData>> = [
     { title: "ID", dataIndex: "id", key: "id", fixed: "left", width: 70, align: "center" },
-    { title: "Tên Sản Phẩm", dataIndex: "ten", key: "ten", width: 200 },
-    { title: "Thương Hiệu", dataIndex: "ID_ThuongHieu", key: "ID_ThuongHieu", width: 150 },
-    { title: "Chất Liệu Vỏ", dataIndex: "ID_ChatLieuVo", key: "ID_ChatLieuVo", width: 150 },
-    { title: "Loại Mũ", dataIndex: "ID_LoaiMu", key: "ID_LoaiMu", width: 150 },
-    { title: "Số Lượng", dataIndex: "SoLuong", key: "SoLuong", align: "right", width: 100 },
-    { title: "Đơn Giá", dataIndex: "DonGia", key: "DonGia", align: "right", width: 120 },
-    { title: "Xuất Xứ", dataIndex: "XuatXu", key: "XuatXu", width: 150 },
-    { title: "Mô Tả Chi Tiết", dataIndex: "MoTaChiTiet", key: "MoTaChiTiet", width: 200 },
-    {
-      title: "Trạng Thái",
-      dataIndex: "TrangThai",
-      key: "TrangThai",
-      width: 120,
-      render: (status) => (status === "active" ? "Hoạt động" : "Không hoạt động"),
-    },
+    { title: "Tên Sản Phẩm", dataIndex: "ten", key: "ten", width: 250 },
     {
       title: "Ảnh",
       dataIndex: "Anh",
       key: "Anh",
-      width: 150,
+      width: 100,
+      align: "center",
       render: (src) => (
         <div
           style={{
-            width: "100px",
-            height: "100px",
+            width: "55px",
+            height: "55px",
             border: "1px solid #d9d9d9",
             borderRadius: "8px",
             overflow: "hidden",
-            display: "flex",
             alignItems: "center",
             justifyContent: "center",
             background: src ? "none" : "#f5f5f5",
-          }}
-        >
+          }}>
           {src ? (
             <img src={src} alt="product" style={{ maxWidth: "100%", maxHeight: "100%" }} />
           ) : (
@@ -110,6 +95,17 @@ const ProductManagement = () => {
         </div>
       ),
     },
+    { title: "Số Lượng", dataIndex: "SoLuong", key: "SoLuong", align: "center", width: 100 },
+    { title: "Đơn Giá", dataIndex: "DonGia", key: "DonGia", align: "center", width: 150 },
+    { title: "Loại Mũ", dataIndex: "ID_LoaiMu", key: "ID_LoaiMu", width: 200 },
+    {
+      title: "Trạng Thái",
+      dataIndex: "TrangThai",
+      key: "TrangThai",
+      width: 120,
+      render: (status) => (status === "1" ? "Hoạt động" : "Không hoạt động"),
+    },
+
   ];
 
   interface ProductTableData {
@@ -119,7 +115,7 @@ const ProductManagement = () => {
     ID_ChatLieuVo: string;
     ID_LoaiMu: string;
     SoLuong: number;
-    DonGia: number;
+    DonGia: string;
     XuatXu: string;
     MoTaChiTiet: string;
     TrangThai: string;
@@ -134,7 +130,7 @@ const ProductManagement = () => {
       ID_ChatLieuVo: item.idChatLieuVo?.ten || "",
       ID_LoaiMu: item.idLoaiMu?.ten || "",
       SoLuong: item.sl,
-      DonGia: item.donGia,
+      DonGia: item.formattedGia,
       XuatXu: item.xuatXu || "",
       MoTaChiTiet: item.moTaCT || "",
       TrangThai: item.tt || "inactive",
@@ -154,28 +150,26 @@ const ProductManagement = () => {
         flexDirection: "column",
       }}
     >
-    <Title level={1}>Quản lý sản phẩm</Title>
+      <Title level={1}>Quản lý sản phẩm</Title>
       <Divider />
-      {/* Nút tạo mới */}
       <Button
         type="default"
         style={{ width: "150px", marginBottom: "16px" }}
         onClick={handleClearForm}>Tạo mới sản phẩm</Button>
-      {/* Bảng sản phẩm */}
-      <div style={{ flex: "1", overflowY: "auto", backgroundColor: "#fff", borderRadius: "8px" }}>
-        <Table<ProductTableData>
-          dataSource={listData}
-          columns={columns}
-          rowKey="id"
-          pagination={{ pageSize: 5 }}
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record),
-          })}
-        />
-      </div>
-      {/* Modal Form */}
+      <Table<ProductTableData>
+        bordered
+        style={{ backgroundColor: "#fff", borderRadius: "8px" }}
+        dataSource={listData}
+        columns={columns}
+        rowKey="id"
+        pagination={{ pageSize: 6 }}
+        onRow={(record) => ({
+          onClick: () => handleRowClick(record),
+        })}
+      />
+
       <Modal
-        width={1000}
+        width={1200}
         title={selectedProduct ? "Chỉnh sửa sản phẩm" : "Thêm mới sản phẩm"}
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
@@ -202,37 +196,23 @@ const ProductManagement = () => {
             TrangThai: "",
           }}
         >
-          <Row gutter={16}>
-            <Col span={12}>
+          <Row gutter={24}>
+            <Col span={8}>
               <Form.Item name="ten" label="Tên sản phẩm" rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="ID_ThuongHieu" label="Thương hiệu">
-                <Select placeholder="Chọn thương hiệu">
-                  <Option value="1">Thương hiệu A</Option>
-                  <Option value="2">Thương hiệu B</Option>
-                </Select>
-              </Form.Item>
-              <Form.Item name="SoLuong" label="Số lượng">
-                <InputNumber min={0} style={{ width: "100%" }} />
-              </Form.Item>
-              <Form.Item name="DonGia" label="Đơn giá">
-                <InputNumber min={0} style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
               <Form.Item label="Ảnh">
                 <Upload
                   listType="picture"
                   showUploadList={false}
-                  beforeUpload={() => false} // Disable automatic upload
+                  beforeUpload={() => false}
                   onChange={handleImageUpload}>
                   <Button icon={<UploadOutlined />}>Tải ảnh lên</Button>
                 </Upload>
                 <div
                   style={{
                     width: "100%",
-                    height: "150px",
+                    height: "180px",
                     border: "1px solid #d9d9d9",
                     marginTop: "16px",
                     borderRadius: "8px",
@@ -253,11 +233,50 @@ const ProductManagement = () => {
                   )}
                 </div>
               </Form.Item>
+
+              <Form.Item name="SoLuong" label="Số lượng">
+                <InputNumber min={0} style={{ width: "100%" }} />
+              </Form.Item>
+              <Form.Item name="DonGia" label="Đơn giá">
+                <InputNumber min={0} style={{ width: "100%" }} />
+              </Form.Item>
+
+            </Col>
+
+            <Col span={8}>
+              <Form.Item name="ID_ThuongHieu" label="Thương hiệu">
+                <Select placeholder="Chọn thương hiệu">
+                  <Option value="1">Thương hiệu A</Option>
+                  <Option value="2">Thương hiệu B</Option>
+                </Select>
+              </Form.Item>
               <Form.Item name="XuatXu" label="Xuất xứ">
                 <Input />
               </Form.Item>
               <Form.Item name="MoTaChiTiet" label="Mô tả chi tiết">
-                <Input.TextArea rows={3} />
+                <Input.TextArea rows={2} />
+              </Form.Item>
+              <Form.Item name="TrangThai" label="Trạng thái">
+                <Select>
+                  <Option value="active">Hoạt động</Option>
+                  <Option value="inactive">Không hoạt động</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+
+            <Col span={8}>
+              <Form.Item name="ID_ThuongHieu" label="Thương hiệu">
+                <Select placeholder="Chọn thương hiệu">
+                  <Option value="1">Thương hiệu A</Option>
+                  <Option value="2">Thương hiệu B</Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name="XuatXu" label="Xuất xứ">
+                <Input />
+              </Form.Item>
+              <Form.Item name="MoTaChiTiet" label="Mô tả chi tiết">
+                <Input.TextArea rows={2} />
               </Form.Item>
               <Form.Item name="TrangThai" label="Trạng thái">
                 <Select>

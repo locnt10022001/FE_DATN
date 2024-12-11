@@ -10,7 +10,6 @@ const { Title, Text } = Typography;
 
 const OrderConfirmation = () => {
   const [orderInfo, setOrderInfo] = useState<{
-    customerName: string;
     province: string | null;
     district: string | null;
     ward: string | null;
@@ -21,7 +20,6 @@ const OrderConfirmation = () => {
     totalAmount: number;
     voucher: string | null;
   }>({
-    customerName: '',
     province: null,
     district: null,
     ward: null,
@@ -117,7 +115,6 @@ const OrderConfirmation = () => {
 
   const isFormValid = () => {
     return (
-      orderInfo.customerName.trim() !== '' &&
       orderInfo.province &&
       orderInfo.district &&
       orderInfo.ward &&
@@ -160,7 +157,7 @@ const OrderConfirmation = () => {
     const request: OrderRequest = {
       gioHangId: 0,
       idTaiKhoan: 1,
-      diachi: `${orderInfo.customerName} - ĐC: ${orderInfo.street}, ${orderInfo.ward}, ${orderInfo.district}, ${orderInfo.province} - SĐT: ${orderInfo.phoneNumber}`,
+      diachi: `${orderInfo.street}, ${orderInfo.ward}, ${orderInfo.district}, ${orderInfo.province} - SĐT: ${orderInfo.phoneNumber}`,
       sanPhamList: sanPham,
     };
 
