@@ -4,7 +4,7 @@ type Props = {}
 
 const Management = (props: Props) => {
   return (
-    <div>Management</div>
+    <div style={{minHeight:'100vh'}}>Management</div>
   )
 }
 

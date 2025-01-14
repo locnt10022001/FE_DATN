@@ -4,5 +4,5 @@ export interface Color {
     ten: string,
     moTa: string,
     ngayTao: string,
-    ngayCapNhat: null
+    ngayCapNhat: string
 }

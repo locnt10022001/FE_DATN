@@ -3,5 +3,5 @@ export interface Brand {
     ten: string,
     moTa: string,
     ngayTao: string,
-    ngayCapNhat: null
+    ngayCapNhat: string
 }

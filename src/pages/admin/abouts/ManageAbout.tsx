@@ -1,131 +1,178 @@
-import { Table, Empty, message, Image, Modal } from 'antd';
-import { useEffect, useState } from 'react';
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons"
-import { GetAllAbout, RemoveAbout } from '../../../services/about';
-import IAbout from '../../../types/about';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Table, Button, Modal, Form, Input, message, Space, DatePicker, } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
+import Title from "antd/es/typography/Title";
+import { Brand } from "../../../types/brand";
+import { GetAllBrand, GetAllColor } from "../../../services/productingredients";
 
-const ManageAbout = () => {
-  // api comment 
-  const [abouts, setabouts] = useState<IAbout[]>([])
+const BrandManagement: React.FC = () => {
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentBrand, setCurrentBrand] = useState<Brand | null>(null);
+  const [form] = Form.useForm();
+
   useEffect(() => {
-    GetAllAbout().then(({ data }) => setabouts(data))
+    GetAllBrand().then(({ data }) => {
+      try {
+        setBrands(data.map((color: any) => ({
+          ...color,
+          ngayTao: dayjs(color.ngayTao).format("DD/MM/YYYY"),
+          ngayCapNhat: dayjs(color.ngayCapNhat).format("DD/MM/YYYY"),
+        })));
+      } catch (error) {
+        console.error("Lỗi khi gọi API:", error);
+        message.error("Không thể tải danh sách màu sắc.");
+      }
+    });
   }, [])
-  const HandleRemoveAbout = async (id: string) => {
-    const key = 'loading';
-    try {
-      Modal.confirm({
-        title: 'Confirm',
-        content: 'Are you sure you want to delete this about?',
-        okText: 'Yes',
-        cancelText: 'No',
-        okButtonProps: {
-          className: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" // áp dụng lớp CSS
-        },
-        onOk: async () => {
-          const loading = message.loading({ content: 'Loading...', duration: 0 });
-          setTimeout(async () => {
-            if (loading) {
-              loading();
-            }
-            const response = await RemoveAbout(id);
-            if (response) {
-              message.success('Deleted successfully!', 3);
-              const dataNew = abouts.filter((about) => about._id !== id);
-              setabouts(dataNew);
-            }
-          }, 2000);
-        },
-        onCancel: () => {
-          message.success('Canceled!');
-        },
-      });
-    } catch (error:any) {
-          message.error(error.response.data.message,5);
-    }
+
+  const showAddModal = () => {
+    setIsEditing(false);
+    setCurrentBrand(null);
+    form.resetFields();
+    setIsModalVisible(true);
   };
-  
-const columns = [
-  {
-    title: 'stt',
-    dataIndex: 'index',
-    key: 'index'
-  },
-  {
-    title: 'name',
-    dataIndex: 'name',
-    key: 'name'
-  },
-  {
-    title: 'email',
-    dataIndex: 'email',
-    key: 'email'
-  },
-  {
-    title: 'phone',
-    dataIndex: 'phone',
-    key: 'phone'
-  },
-  {
-    title: 'address',
-    dataIndex: 'address',
-    key: 'address'
-  },
-  {
-    title: 'image',
-    key: 'image',
-    render: (item: IAbout) =>
-      <Image style={{ width: 50, height: 50 }} src={item.image} alt="" />
-  },
-  {
-    title: 'mô tả',
-    dataIndex: 'description',
-    key: 'description'
-  },
-  {
-    title: 'action',
-    render: (item: IAbout) =>
-      <>
-        <Link to={`/admin/abouts/${item.key}/update`}>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><EditOutlined /></button>
-        </Link>
-        <button type="button"
-          onClick={() => HandleRemoveAbout(item.key)}
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-          <DeleteOutlined />
-        </button>
-      </>
-  },
-];
 
-const listData = abouts.map((item: IAbout, index: number) => {
-  return {
-    index: index + 1,
-    key: item._id,
-    name: item.name,
-    email: item.email,
-    phone: item.phone,
-    address: item.address,
-    image: item.image,
-    description: item.description,
-  }
-})
-if (listData.length == 0)
+  const showEditModal = (record: Brand) => {
+    setIsEditing(true);
+    setCurrentBrand(record);
+    form.setFieldsValue({
+      ...record,
+      ngayTao: dayjs(record.ngayTao),
+      ngayCapNhat: dayjs(record.ngayCapNhat),
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = (id: number) => {
+    setBrands((prev) => prev.filter((brand) => brand.id !== id));
+    message.success("Xóa thương hiệu thành công!");
+  };
+
+  const handleSave = () => {
+    form
+      .validateFields()
+      .then((values) => {
+        const newBrand = {
+          ...values,
+          id: isEditing && currentBrand ? currentBrand.id : Date.now(),
+          ngayTao: values.ngayTao.format("YYYY-MM-DD"),
+          ngayCapNhat: values.ngayCapNhat.format("YYYY-MM-DD"),
+        };
+
+        if (isEditing) {
+          setBrands((prev) =>
+            prev.map((brand) =>
+              brand.id === currentBrand?.id ? { ...newBrand } : brand
+            )
+          );
+          message.success("Cập nhật thương hiệu thành công!");
+        } else {
+          setBrands((prev) => [...prev, newBrand]);
+          message.success("Thêm thương hiệu mới thành công!");
+        }
+
+        setIsModalVisible(false);
+      })
+      .catch((error) => {
+        console.error("Lỗi:", error);
+        message.error("Vui lòng kiểm tra lại thông tin.");
+      });
+  };
+
+  const columns: ColumnsType<Brand> = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+    },
+    {
+      title: "Tên Thương Hiệu",
+      dataIndex: "ten",
+      key: "ten",
+    },
+    {
+      title: "Mô Tả",
+      dataIndex: "moTa",
+      key: "moTa",
+    },
+    {
+      title: "Ngày Tạo",
+      dataIndex: "ngayTao",
+      key: "ngayTao",
+    },
+    {
+      title: "Ngày Cập Nhật",
+      dataIndex: "ngayCapNhat",
+      key: "ngayCapNhat",
+    },
+    {
+      title: "Hành Động",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => showEditModal(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            icon={<DeleteOutlined />}
+            danger
+            onClick={() => handleDelete(record.id)}
+          >
+            Xóa
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
   return (
-    <Empty description={false} />
-  )
-return (
-  <>
-    <Table
-      columns={columns}
-      dataSource={listData}
-      bordered
-      pagination={{
-        pageSize: 4, showQuickJumper: true
-      }}
-    />
-  </>
-)
-}
+    <div style={{ padding: 20 }}>
+      <Title>Quản Lý Thương Hiệu</Title>
+      <Button
+        type="default"
+        icon={<PlusOutlined />}
+        onClick={showAddModal}
+        style={{ marginBottom: 20 }}>
+        Thêm Thương Hiệu
+      </Button>
+      <Table columns={columns} dataSource={brands} rowKey="id" />
+      <Modal
+        title={isEditing ? "Chỉnh Sửa Thương Hiệu" : "Thêm Thương Hiệu"}
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onOk={handleSave}
+        okText={isEditing ? "Cập Nhật" : "Thêm Mới"}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ ngayTao: dayjs(), ngayCapNhat: dayjs() }}
+        >
+          <Form.Item
+            label="Tên Thương Hiệu"
+            name="ten"
+            rules={[{ required: true, message: "Vui lòng nhập tên thương hiệu" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Mô Tả"
+            name="moTa"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+          >
+            <Input.TextArea rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
+};
 
-export default ManageAbout
+export default BrandManagement;

@@ -1,8 +1,8 @@
 import { ProductDetails } from "./productdetails";
 
 export interface OrderRequest {
-    gioHangId: number,
-    idTaiKhoan: number,
-    diachi:string,
-    sanPhamList: ProductDetails[];
-  }
+  voucherId: number|null;
+  idTaiKhoan: number,
+  diachi: string,
+  sanPhamList: ProductDetails[];
+}

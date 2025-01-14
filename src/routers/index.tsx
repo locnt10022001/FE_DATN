@@ -2,16 +2,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import LayoutClient from "../layouts/client";
 import Homepage from "../pages/client/HomePage";
 import ProductPage from "../pages/client/ProductsPage";
-import ProductDetailPage from "../pages/client/ProductDetailPage";
 import ProductSale from "../pages/client/ProductsSalePage";
-import SignupPage from "../pages/client/SignupPage";
-import SigninPage from "../pages/client/SigninPage";
 import ContactPage from "../pages/client/ContactPage";
 import { CartPage } from "../pages/client/Cart";
 import OrderPage from "../pages/client/Bill";
 import LayoutAdmin from "../layouts/admin";
 import ManagementProduct from "../pages/admin/products/ManageProduct";
-import ManagementProductUpdate from "../pages/admin/products/ManageProductUpdate";
 import ManageCategory from "../pages/admin/categories/ManageCategory";
 import ManageCategoryUpdate from "../pages/admin/categories/ManageCategoryUpdate";
 import ManageComment from "../pages/admin/comments/ManageComment";
@@ -30,6 +26,8 @@ import UpdateBill from "../pages/admin/bills/UpdateBill";
 import ProductDetail from "../components/ProductDetail";
 import OrderConfirmation from "../components/OrderConfirmation";
 import OrderSuccess from "../components/SuccessPage";
+import ManageColor from "../pages/admin/abouts/ManageColor";
+import HelmetTypeManagement from "../pages/admin/abouts/HelmetTypeManagement";
 
 const Router = () => {
     return (
@@ -63,18 +61,25 @@ const Router = () => {
                     <Route index element={<Management />} />
                     <Route path='products'>
                         <Route index element={<ManagementProduct />} />
-                        <Route path=':id/update' element={<ManagementProductUpdate />} />
                     </Route>
-                    <Route path='categories'>
+                    <Route path='vouchers'>
                         <Route index element={<ManageCategory />} />
                         <Route path=':id/update' element={<ManageCategoryUpdate />} />
                     </Route>
-                    <Route path='hashtags'>
+                    <Route path='promotions'>
                         <Route index element={<ManageHashtag />} />
                         <Route path=':id/update' element={<ManageHashtagUpdate />} />
                     </Route>
-                    <Route path='abouts'>
+                    <Route path='brands'>
                         <Route index element={<ManageAbout />} />
+                        <Route path=':id/update' element={<ManageAboutUpdate />} />
+                    </Route>
+                    <Route path='colors'>
+                        <Route index element={<ManageColor />} />
+                        <Route path=':id/update' element={<ManageAboutUpdate />} />
+                    </Route>
+                    <Route path='categorys'>
+                        <Route index element={<HelmetTypeManagement />} />
                         <Route path=':id/update' element={<ManageAboutUpdate />} />
                     </Route>
                     <Route path='order/bill'>

@@ -22,9 +22,7 @@ const ManageBill = () => {
         content: 'Are you sure you want to delete this about?',
         okText: 'Yes',
         cancelText: 'No',
-        okButtonProps: {
-          className: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" // áp dụng lớp CSS
-        },
+        okButtonProps: { className: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" },
         onOk: async () => {
           const loading = message.loading({ content: 'Loading...', duration: 0 });
           setTimeout(async () => {
@@ -96,7 +94,9 @@ const ManageBill = () => {
       render: (item: IBill) =>
         <>
           <Link to={`/admin/order/bill/${item.ma}/update`}>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"><EditOutlined /></button>
+            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" >
+              <EditOutlined disabled={item.tt === "Đã thanh toán"} />
+            </button>
           </Link>
           <button type="button"
             disabled={true}

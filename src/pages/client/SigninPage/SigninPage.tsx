@@ -17,10 +17,9 @@ const SigninPage = () => {
     const navigate = useNavigate();
     const onFinish = async (value: LoginRequest) => {
         if (isVerified == true) {
-            const key = 'loading'
             if (value) {
                 try {
-                    const loading = await message.loading({ content: 'đang xử lý!', key, duration: 2 })
+                    const loading = await message.loading({ content: 'Đang xử lý...', key: 'loading', duration: 2 })
                     if (loading) {
                         const response: AxiosResponse<LoginResponse> = await Signin(value);
                         if (response) {
@@ -29,12 +28,16 @@ const SigninPage = () => {
                             localStorage.setItem('accessToken', data.token);
                             localStorage.setItem('user', JSON.stringify(data.user))
                             message.success("Đăng nhập thành công", 3);
-                            navigate('/');
+                            window.location.reload();
                         }
                     }
 
                 } catch (error: any) {
-                    message.error(error.response.data.message, 5);
+                    if (error.response && error.response.data && error.response.data.error) {
+                        message.error(error.response.data.error, 5);
+                    } else {
+                        message.error("Đã xảy ra lỗi, vui lòng thử lại sau!", 5);
+                    }
                 }
             }
         }
@@ -64,9 +67,7 @@ const SigninPage = () => {
     };
     return (
         <>
-            <Button className="rounded-md flex space-x-2 w-24 h-10 font-normal text-sm leading-3 text-white bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-700 focus:bg-indigo-600 hover:bg-indigo-600 duration-150 justify-center items-center" onClick={showModalSignin}>
-                Đăng nhập
-            </Button>
+            <Button onClick={showModalSignin}>Đăng nhập</Button>
             <Modal footer={null} open={isModalOpen} onOk={handleOkSignin} onCancel={handleCancelSignin}>
                 <Form className="mt-[30px] mx-auto sm:w-[400px]" name="form_item_path" layout="vertical" onFinish={onFinish} autoComplete="off">
                     <p tabIndex={0} role="heading" aria-label="Đăng nhập tài khoản của bạn" className="text-2xl font-extrabold leading-6 text-gray-800">
@@ -103,12 +104,12 @@ const SigninPage = () => {
                         label="Tên đăng nhập"
                         rules={[
                             {
-                                message: 'Vui lòng nhập email!',
+                                message: 'Vui lòng nhập tên đăng nhập!',
                                 required: true
                             },
                         ]}
                     >
-                        <Input className='font-mono border border-indigo-600 h-10' placeholder="Nhập email" />
+                        <Input className='font-mono border border-indigo-600 h-10' placeholder="Nhập tên đăng nhập" />
                     </Form.Item>
                     <Form.Item className='text-black font-bold'
                         name="matKhau"

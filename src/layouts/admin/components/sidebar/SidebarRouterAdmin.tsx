@@ -1,16 +1,4 @@
-import {
-  LaptopOutlined,
-  MobileOutlined,
-  MessageOutlined,
-  UserOutlined,
-  UnorderedListOutlined,
-  ShoppingCartOutlined,
-  TagsOutlined,
-  InfoOutlined,
-  PhoneOutlined,
-  HomeOutlined
-} from '@ant-design/icons';
-
+import { LaptopOutlined, MobileOutlined, MessageOutlined, UserOutlined, UnorderedListOutlined, ShoppingCartOutlined, TagsOutlined, InfoOutlined, PhoneOutlined, HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { MenuProps } from 'antd';
 
@@ -38,20 +26,18 @@ export const items: MenuProps['items'] = [
     getItem(<Link to="/admin/order/bill">Quản lý đơn hàng</Link>, '/admin/order/bill'),
     getItem(<Link to="/admin/order/onlinebill">Quản lý đơn hàng online</Link>, '/admin/order/onlinebill'),
   ]),
-  getItem('Sản phẩm', 'Sản phẩm', <MobileOutlined />, [
-    getItem(<Link to="/admin/products">Danh sách sản phẩm</Link>, '/admin/products'),
-  ]),
-  getItem('Danh mục', 'Danh mục', <LaptopOutlined />, [
-    getItem(<Link to="/admin/categories">Quản lý danh mục</Link>, '/admin/categories'),
+  getItem(<Link to="/admin/products">Sản phẩm</Link>, '/admin/products', <MobileOutlined />),
+  getItem('Voucher và khuyến mãi', 'Voucher và khuyến mãi', <LaptopOutlined />, [
+    getItem(<Link to="/admin/vouchers">Quản lý voucher </Link>, '/admin/vouchers'),
+    getItem(<Link to="/admin/promotions">Quản lý khuyến mãi</Link>, '/admin/promotions'),
   ]),
   getItem('Phân loại', 'Phân Loại', <TagsOutlined />, [
-    getItem(<Link to="/admin/hashtags">Quản lý phân loại</Link>, '/admin/hashtags'),
+    getItem(<Link to="/admin/brands">Quản lý thương hiệu</Link>, '/admin/brands'),
+    getItem(<Link to="/admin/colors">Quản lý màu sắc</Link>, '/admin/colors'),
+    getItem(<Link to="/admin/categorys">Quản lý loại mũ</Link>, '/admin/categorys'),
   ]),
-  getItem('Khuyến mãi', 'Khuyến mãi', <MessageOutlined />, [
-    getItem(<Link to="/admin/comments">Quản lý khuyến mãi</Link>, '/admin/comments'),
-  ]),
-  getItem('Tài khoản', 'Tài khoản', <UserOutlined />, [
-    getItem(<Link to="/admin/accounts">Quản lý tài khoản</Link>, '/admin/accounts'),
-  ]),
-
+  // getItem('Khuyến mãi', 'Khuyến mãi', <MessageOutlined />, [
+  //   getItem(<Link to="/admin/comments">Quản lý khuyến mãi</Link>, '/admin/comments'),
+  // ]),
+  getItem(<Link to="/admin/accounts">Tài khoản</Link>, '/admin/accounts', <UserOutlined />),
 ];

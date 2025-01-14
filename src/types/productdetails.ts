@@ -30,5 +30,6 @@ export interface ProductDetails {
     ngayTao: string,
     nguoiCapNhat: string,
     ngayCapNhat: string,
-    formattedGia: string
+    formattedGia: string,
+    giaGiam?:number
 }

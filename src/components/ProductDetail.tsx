@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from "react";
-import {
-    Row,
-    Col,
-    Typography,
-    Button,
-    Rate,
-    InputNumber,
-    Tabs,
-    Card,
-    message,
-    Select,
-    Divider,
-} from "antd";
+import { Row, Col, Typography, Button, Rate, InputNumber, Tabs, Card, message, Select, Divider, Modal, } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { Link, useParams } from "react-router-dom";
 import "./DetailProduct.css";
 import { GetProductById } from "../services/product";
 import { AddProductToCart } from "../services/bill";
 import { ProductResponse } from "../types/productresponse";
+import { Signin } from "../services/auth";
+import SignupPage from "../pages/client/SignupPage";
+import SigninPage from "../pages/client/SigninPage";
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -34,8 +25,8 @@ const ProductDetail: React.FC = () => {
     const user = localStorage.getItem("user");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const accountId = user ? JSON.parse(user).id : "";
 
-    // Fetch product details
     useEffect(() => {
         if (productId !== null && !isNaN(productId)) {
             setLoading(true);
@@ -51,7 +42,6 @@ const ProductDetail: React.FC = () => {
         }
     }, [productId]);
 
-    // Set initial color and size
     useEffect(() => {
         if (productResponse?.chiTietList && productResponse.chiTietList.length > 0) {
             const uniqueColors = Array.from(
@@ -61,7 +51,6 @@ const ProductDetail: React.FC = () => {
         }
     }, [productResponse]);
 
-    // Update available sizes when color changes
     useEffect(() => {
         if (selectedColor && productResponse?.chiTietList) {
             const sizesForColor = productResponse.chiTietList
@@ -72,7 +61,6 @@ const ProductDetail: React.FC = () => {
         }
     }, [selectedColor, productResponse]);
 
-    // Get details of selected product
     const getProductDetails = () => {
         if (!productResponse?.chiTietList) return null;
         return productResponse.chiTietList.find(
@@ -86,14 +74,18 @@ const ProductDetail: React.FC = () => {
             message.error("Vui lòng chọn đầy đủ thông tin sản phẩm.");
             return;
         }
-
         try {
-            const key = "loading";
-            message.loading({ content: "Đang thêm sản phẩm vào giỏ hàng...", key });
-            const accountId = user ? JSON.parse(user).id : "";
-            await AddProductToCart(selectedDetail.id, accountId, quantity);
-            message.success({ content: "Thêm sản phẩm vào giỏ hàng thành công.", key, duration: 3 });
-            window.location.reload();
+            if (!user) {
+                message.error({ content: "Bạn phải đăng nhập trước" });
+            } else {
+                const loading = await message.loading({ content: "Đang thêm sản phẩm vào giỏ hàng...", key: 'loading', duration: 2 });
+                if (loading) {
+                    const response = await AddProductToCart(selectedDetail.id, accountId, quantity);
+                    if (response) {
+                        message.success({ content: "Thêm sản phẩm vào giỏ hàng thành công.", key: 'loading', duration: 3 });
+                    }
+                }
+            }
         } catch {
             message.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
         }
@@ -115,28 +107,47 @@ const ProductDetail: React.FC = () => {
                 <>
                     <Row gutter={16}>
                         <Col xs={24} sm={13} md={13}>
-                            <Card hoverable className="product-gallery" >
+                            <Card hoverable className="product-gallery" style={{ textAlign: 'center' }}>
                                 {selectedDetail?.anh ? (
-                                    <img src={selectedDetail.anh} alt={selectedDetail.idSanPham.ten} />
+                                    <img src={selectedDetail.anh} alt={selectedDetail.idSanPham.ten} style={{
+                                        width: '100%',
+                                        height: '420px',
+                                        objectFit: 'contain',
+                                        borderRadius: '8px'
+                                    }} />
                                 ) : (
-                                    <p>Không có hình ảnh</p>
+                                    <p style={{
+                                        width: '100%',
+                                        height: '420px',
+                                        objectFit: 'contain',
+                                        borderRadius: '8px'
+                                    }} ><b>Không có hình ảnh</b></p>
                                 )}
                             </Card>
                         </Col>
                         <Col xs={24} sm={11} md={11}>
                             <Card className="product-info-box">
                                 <Title level={4}>{selectedDetail?.idSanPham.ten}</Title>
-                                <Rate allowHalf defaultValue={5} />
-                                <Text>({100} đánh giá)</Text>
-                                <Title level={1}>{selectedDetail?.formattedGia || "Loading..."}</Title>
+                                <Rate allowHalf defaultValue={5} disabled />
+                                <Text> ({100} đánh giá)</Text>
+
+                                {selectedDetail?.giaGiam || 0 > 0 ? (
+                                    <div>
+                                        <Title delete level={3} style={{ color: "#888" }}>{selectedDetail?.formattedGia || "Loading..."}</Title>
+                                        <Title type="danger" style={{ fontWeight: "bold" }} level={1}>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedDetail?.giaGiam || 0)}</Title>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <Title style={{ fontWeight: "bold" }}level={1}>{selectedDetail?.formattedGia || "Loading..."}</Title>
+                                    </div>
+                                )}
                                 <div className="color-size-section">
                                     <div className="form-row">
                                         <Text>Màu sắc:</Text>
                                         <Select
                                             value={selectedColor}
                                             style={{ width: 120 }}
-                                            onChange={(value) => setSelectedColor(value)}
-                                        >
+                                            onChange={(value) => setSelectedColor(value)}>
                                             {Array.from(
                                                 new Set(
                                                     productResponse?.chiTietList.map((detail) => detail.idMauSac.ten)
@@ -154,8 +165,7 @@ const ProductDetail: React.FC = () => {
                                             value={selectedSize}
                                             style={{ width: 120 }}
                                             onChange={(value) => setSelectedSize(value)}
-                                            disabled={!availableSizes.length}
-                                        >
+                                            disabled={!availableSizes.length}>
                                             {availableSizes.map((size) => (
                                                 <Option key={size} value={size}>
                                                     {size}
@@ -174,18 +184,53 @@ const ProductDetail: React.FC = () => {
                                         <Text> (Còn lại: {selectedDetail?.sl || 0})</Text>
                                     </div>
                                 </div>
-                                <div className="button-group mt-20">
+                                <div className="button-group mt-20" >
                                     <Button
                                         type="default"
                                         icon={<ShoppingCartOutlined />}
                                         onClick={handleAddToCart}
-                                        disabled={!selectedColor || !selectedSize}
-                                    >
+                                        style={{ marginRight: 10 }}
+                                        disabled={!selectedColor || !selectedSize}>
                                         Thêm vào giỏ hàng
                                     </Button>
                                     <Link
                                         to="/checkout"
-                                        state={{ products: [{ id: selectedDetail?.id, quantity, },], }}>
+                                        state={{
+                                            products: [
+                                                {
+                                                    id: selectedDetail?.id,
+                                                    ma: selectedDetail?.ma,
+                                                    idSanPham: selectedDetail?.idSanPham,
+                                                    idThuongHieu: selectedDetail?.idThuongHieu,
+                                                    idChatLieuVo: selectedDetail?.idChatLieuVo,
+                                                    idLoaiMu: selectedDetail?.idLoaiMu,
+                                                    idKhuyenMai: selectedDetail?.idKhuyenMai,
+                                                    idLoaiKinh: selectedDetail?.idLoaiKinh,
+                                                    idChatLieuDem: selectedDetail?.idChatLieuDem,
+                                                    moTaCT: selectedDetail?.moTaCT,
+                                                    tt: selectedDetail?.tt,
+                                                    xuatXu: selectedDetail?.xuatXu,
+                                                    nguoiTao: selectedDetail?.nguoiTao,
+                                                    ngayTao: selectedDetail?.ngayTao,
+                                                    nguoiCapNhat: selectedDetail?.nguoiCapNhat,
+                                                    ngayCapNhat: selectedDetail?.ngayCapNhat,
+                                                    giaGiam: selectedDetail?.giaGiam,
+                                                    sl: quantity || 1,
+                                                    donGia: selectedDetail?.donGia || 0,
+                                                    anh: selectedDetail?.anh || "",
+                                                    idMauSac: {
+                                                        id: selectedDetail?.idMauSac?.id || 0,
+                                                        ten: selectedColor || "",
+                                                    },
+                                                    idKichThuoc: {
+                                                        id: selectedDetail?.idKichThuoc?.id || 0,
+                                                        ten: selectedSize || "",
+                                                    },
+                                                    formattedGia: selectedDetail?.formattedGia
+                                                },
+                                            ],
+                                            totalAmount: (selectedDetail?.donGia || 0) * (quantity || 1),
+                                        }}>
                                         <Button
                                             type="primary"
                                             danger

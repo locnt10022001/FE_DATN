@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom'
-import { IProduct } from '../types/product'
 import { EyeInvisibleOutlined } from "@ant-design/icons";
+import { IProducts } from '../types/products';
 
 type Props = {
-    ProductSale: IProduct[]
+    ProductSale: IProducts[]
 }
 const ListProductSale = (props: Props) => {
     return (
         <div>
-            <div className="container mx-auto">
+            {/* <div className="container mx-auto">
                 <div className="title">
                     <h1 className='my-8 px-2 text-[36px] font-bold'>Products on sale</h1>
                 </div>
@@ -42,7 +42,7 @@ const ListProductSale = (props: Props) => {
                         </Link>
                     ))}
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }

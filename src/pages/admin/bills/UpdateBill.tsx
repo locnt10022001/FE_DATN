@@ -219,9 +219,8 @@ const UpdateBill = () => {
   return (
     <Layout style={layoutStyle}>
       <Content style={contentStyle}>
-
         <Divider>Giỏ hàng</Divider>
-        <Table columns={columnsGH} size='middle' dataSource={listDataGH} pagination={{ pageSize: 5, showQuickJumper: false, hideOnSinglePage: true, }} style={{ height: '33%' }} />
+        <Table columns={columnsGH} bordered size='middle' dataSource={listDataGH} pagination={{ pageSize: 5, showQuickJumper: false, hideOnSinglePage: true, }} style={{ height: '33%' }} />
         <Divider>Sản phẩm</Divider>
         <Input
           width="330%"
@@ -229,7 +228,7 @@ const UpdateBill = () => {
           placeholder="Nhập tên sản phẩm"
           value={searchValue}
           onChange={handleSearch} />
-        <Table columns={columns} dataSource={listDataSP} size='small' pagination={{ pageSize: 5, showQuickJumper: true, hideOnSinglePage: true, }} style={{ height: '50%' }} />
+        <Table bordered columns={columns} dataSource={listDataSP} size='small' pagination={{ pageSize: 5, showQuickJumper: true, hideOnSinglePage: true, }} style={{ height: '50%' }} />
       </Content>
       <Sider width="30%" style={siderStyle}>
         <Divider>THÔNG TIN HOÁ ĐƠN</Divider>

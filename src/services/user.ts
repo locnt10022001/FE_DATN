@@ -2,7 +2,11 @@ import IUser from "../types/user"
 import intansce from "./intansce"
 
 export const GetAllUser = () => {
-    return intansce.get('/users')
+    return intansce.get('/tai-khoan/danhsach')
+}
+
+export const GetRole = () => {
+    return intansce.get('/vaitro/danhsach')
 }
 
 export const GetOneUser = (_id: string) => {

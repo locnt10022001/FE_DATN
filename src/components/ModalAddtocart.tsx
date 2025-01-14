@@ -1,14 +1,11 @@
 import { Modal } from 'antd';
 import { useState } from 'react';
-import { IProduct } from '../types/product';
 import { Carousel, FormItemProps, Image, Input, Form, Select, message } from 'antd'
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/actions/cartActions';
 import { createContext, useContext } from 'react';
 import { AppDispatch } from '../redux/store';
-type Props = {
-    product: IProduct,
-}
+
 const MyFormItemContext = createContext<(string | number)[]>([]);
 function toArr(str: string | number | (string | number)[]): (string | number)[] {
     return Array.isArray(str) ? str : [str];
@@ -19,25 +16,25 @@ const MyFormItem = ({ name, ...props }: FormItemProps) => {
     return <Form.Item name={concatName} {...props} />;
 };
 
-const ModalAddtocart = (props: Props) => {
-    const [open, setOpen] = useState(false);
-    const dispatch = useDispatch<AppDispatch>();
-    const onFinish = async (values: IProduct) => {
-        const cartData: any = {
-            size: values.sizes,
-            quantity: values.quantity,
-            productId: props.product._id
-        }
-        const key = 'loading'
-        const loading = await message.loading({ content: 'loading!', key, duration: 2 })
-        if (loading) {
-            message.success('add to cart successfully')
-            dispatch(addToCart(cartData));
-        }
-    };
+const ModalAddtocart = (props: any) => {
+    // const [open, setOpen] = useState(false);
+    // const dispatch = useDispatch<AppDispatch>();
+    // const onFinish = async (values: IProduct) => {
+    //     const cartData: any = {
+    //         size: values.sizes,
+    //         quantity: values.quantity,
+    //         productId: props.product._id
+    //     }
+    //     const key = 'loading'
+    //     const loading = await message.loading({ content: 'loading!', key, duration: 2 })
+    //     if (loading) {
+    //         message.success('add to cart successfully')
+    //         dispatch(addToCart(cartData));
+    //     }
+    // };
     return (
         <>
-            <button onClick={() => setOpen(true)} className='bg-black text-white w-full h-[42px] rounded-xl'>Add To Cart</button>
+            {/* <button onClick={() => setOpen(true)} className='bg-black text-white w-full h-[42px] rounded-xl'>Add To Cart</button>
             <Modal
                 centered
                 open={open}
@@ -153,7 +150,7 @@ const ModalAddtocart = (props: Props) => {
                         </div>
                     </div>
                 </section>
-            </Modal>
+            </Modal> */}
         </>
     );
 };

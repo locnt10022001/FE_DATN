@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, message, Input, Tabs, Dropdown, Menu } from 'antd';
-import { DeleteOutlined, EditOutlined, DownOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { Table, Button, message, Input, Tabs } from 'antd';
 import { format, parseISO } from 'date-fns';
 import { Link } from 'react-router-dom';
 import './Otable.css';
 import { GetOnlineBill } from '../../../services/bill';
 import IBill from '../../../types/bill';
+import type { ColumnsType } from 'antd/es/table';
+import dayjs from "dayjs";
 
 const { Search } = Input;
 const { TabPane } = Tabs;
@@ -14,16 +15,6 @@ const OrderTable = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [searchText, setSearchText] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('');
-
-    const statusOptions: { [key: string]: string[] } = {
-        "Chờ xác nhận": ["Xác nhận"],
-        "Đã xác nhận": ["Đang giao"],
-        "Đang giao": ["Đã giao"],
-        "Đã giao": [],
-        "Hoàn thành": [],
-        "Đã Hủy": [],
-        "Hoàn trả": [],
-    };
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -41,24 +32,21 @@ const OrderTable = () => {
         fetchOrders();
     }, []);
 
-    const formatOrderData = (orders: IBill[]) => {
-        return orders.map((order, index) => ({
-            stt: index + 1,
-            id: order.id,
-            ma: order.ma,
-            diaChi: order.diaChi,
-            tien: order.tongTien,
-            ghichu: order.ghiChu,
-            ngayTao: order.ngayTao ? format(parseISO(order.ngayTao), 'HH:mm:ss dd-MM-yyyy') : '',
-            tt: order.tt,
-        }));
-    };
 
-    const listData = formatOrderData(orders);
+    const listData: IBill[] = orders.map((order, index) => ({
+        ...order,
+        stt: index + 1,
+        ma: order.ma,
+        diaChi: order.idTaiKhoan.sdt +" - " +order.diaChi,
+        tongTien: order.tongTien,
+        ghiChu: order.ghiChu,
+        ngayTao: order.ngayTao,
+        tt: order.tt,
+      }));
 
     const filteredData = listData.filter((item) => {
-        const statusMatches = statusFilter === '' || item.tt === statusFilter;
-        const searchMatches = searchText === '' || item.ma.toLowerCase().includes(searchText.toLowerCase());
+        const statusMatches = !statusFilter || item.tt === statusFilter;
+        const searchMatches = !searchText || item.ma.toLowerCase().includes(searchText.toLowerCase());
         return statusMatches && searchMatches;
     });
 
@@ -66,31 +54,19 @@ const OrderTable = () => {
         setStatusFilter(key === 'Tất cả' ? '' : key);
     };
 
-    const handleStatusChange = (record: any, newStatus: string) => {
-        const updatedOrders = orders.map((order) => {
-            if (order.ma === record.ma) {
-                return { ...order, tt: newStatus };
-            }
-            return order;
-        });
-        setOrders(updatedOrders);
-        message.success(`Cập nhật trạng thái của hóa đơn ${record.ma} thành ${newStatus}`);
-    };
-
     const btnHD = {
         border: '1px solid',
         borderRadius: 5,
         backgroundColor: '#ffffff',
         color: '#000',
-        
     };
 
     const renderStatus = (record: any) => {
         const statusColors: { [key: string]: string } = {
-            "Hoàn thành": "#52c41a", // Xanh lá
-            "Đang giao hàng": "#1890ff", // Xanh dương
-            "Đã xác nhận": "#13c2c2", // Màu cian
-            "Đã hủy": "#ff4d4f",   // Màu đỏ
+            "Hoàn thành": "#52c41a",
+            "Đang giao hàng": "#1890ff",
+            "Đã xác nhận": "#13c2c2",
+            "Đã hủy": "#ff4d4f",
         };
         const buttonStyle = {
             border: '1px solid',
@@ -99,12 +75,10 @@ const OrderTable = () => {
             color: statusColors[record.tt] ? '#fff' : '#000',
         };
 
-        return <Button style={buttonStyle}>
-            {record.tt}
-        </Button>
+        return <Button style={buttonStyle}>{record.tt}</Button>;
     };
 
-    const columns = [
+    const columns: ColumnsType<IBill> = [
         {
             title: 'STT',
             dataIndex: 'stt',
@@ -122,18 +96,22 @@ const OrderTable = () => {
         },
         {
             title: 'Tổng Tiền',
-            dataIndex: 'tien',
-            key: 'tien',
+            dataIndex: 'tongTien',
+            key: 'tongTien',
         },
         {
             title: 'Ghi Chú',
-            dataIndex: 'ghichu',
-            key: 'ghichu',
+            dataIndex: 'ghiChu',
+            key: 'ghiChu',
         },
         {
             title: 'Ngày Tạo',
             dataIndex: 'ngayTao',
             key: 'ngayTao',
+            render:(value) => dayjs(value).format("DD/MM/YYYY HH:mm:ss"),
+            sorter: (a, b) => new Date(a.ngayTao).getTime() - new Date(b.ngayTao).getTime(),
+            sortDirections: ['descend', 'ascend'],
+            defaultSortOrder:'descend'
         },
         {
             title: 'Trạng Thái',
@@ -143,10 +121,9 @@ const OrderTable = () => {
         {
             title: 'Hành Động',
             render: (item: IBill) => (
-
                 <Link to={`/admin/order/onlinebill/${item.ma}/update`}>
                     <Button style={btnHD}>Chi tiết</Button>
-                </Link >
+                </Link>
             ),
         },
     ];
@@ -185,3 +162,4 @@ const OrderTable = () => {
 };
 
 export default OrderTable;
+

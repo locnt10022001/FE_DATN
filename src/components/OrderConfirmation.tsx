@@ -5,8 +5,13 @@ import axios from 'axios';
 import { ProductDetails } from "../types/productdetails";
 import { OrderRequest } from '../types/order';
 import { SubmitOrderConfirmation } from '../services/bill';
+import { GetAllVoucher } from '../services/voucher';
+import { Voucher } from '../types/voucher';
 
 const { Title, Text } = Typography;
+const user = localStorage.getItem("user");
+const accountId = user ? JSON.parse(user).id : "";
+
 
 const OrderConfirmation = () => {
   const [orderInfo, setOrderInfo] = useState<{
@@ -14,24 +19,32 @@ const OrderConfirmation = () => {
     district: string | null;
     ward: string | null;
     street: string;
+    provinceCode: string | null;
+    districtCode: string | null;
+    wardCode: string | null;
     phoneNumber: string;
     paymentMethod: string;
     products: ProductDetails[];
     totalAmount: number;
-    voucher: string | null;
+    originalTotalAmount: number;
+    voucher: number | null;
   }>({
     province: null,
     district: null,
     ward: null,
     street: '',
+    provinceCode: null,
+    districtCode: null,
+    wardCode: null,
     phoneNumber: '',
     paymentMethod: 'COD',
     products: [],
     totalAmount: 0,
+    originalTotalAmount: 0,
     voucher: null,
   });
 
-  const user = localStorage.getItem("user");
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [provinces, setProvinces] = useState<any[]>([]);
   const [districts, setDistricts] = useState<any[]>([]);
   const [wards, setWards] = useState<any[]>([]);
@@ -45,7 +58,6 @@ const OrderConfirmation = () => {
   const location = useLocation();
   const state = location.state as StateType;
 
-  // Fetch danh sách tỉnh/thành phố
   useEffect(() => {
     const fetchProvinces = async () => {
       try {
@@ -59,13 +71,12 @@ const OrderConfirmation = () => {
     fetchProvinces();
   }, []);
 
-  // Fetch danh sách quận/huyện
   useEffect(() => {
-    if (orderInfo.province) {
+    if (orderInfo.provinceCode) {
       const fetchDistricts = async () => {
         try {
           const response = await axios.get(
-            `https://provinces.open-api.vn/api/p/${orderInfo.province}?depth=2`
+            `https://provinces.open-api.vn/api/p/${orderInfo.provinceCode}?depth=2`
           );
           setDistricts(response.data.districts || []);
         } catch (error) {
@@ -80,12 +91,11 @@ const OrderConfirmation = () => {
     setWards([]);
   }, [orderInfo.province]);
 
-  // Fetch danh sách xã/phường khi quận thay đổi
   useEffect(() => {
-    if (orderInfo.district) {
+    if (orderInfo.districtCode) {
       const fetchWards = async () => {
         try {
-          const response = await axios.get(`https://provinces.open-api.vn/api/d/${orderInfo.district}?depth=2`);
+          const response = await axios.get(`https://provinces.open-api.vn/api/d/${orderInfo.districtCode}?depth=2`);
           setWards(response.data.wards || []);
         } catch (error) {
           console.error('Error fetching wards:', error);
@@ -98,7 +108,6 @@ const OrderConfirmation = () => {
     }
   }, [orderInfo.district]);
 
-  // Fetch thông tin sản phẩm từ location.state
   useEffect(() => {
     if (state) {
       const { products, totalAmount } = state;
@@ -106,22 +115,44 @@ const OrderConfirmation = () => {
         ...prevState,
         products,
         totalAmount,
+        originalTotalAmount: totalAmount
       }));
     } else {
       message.error("Không tìm thấy thông tin sản phẩm. Quay lại giỏ hàng.");
       navigate('/cart');
     }
   }, [state, navigate]);
+  useEffect(() => {
+    GetAllVoucher()
+      .then(({ data }) => { setVouchers(data); })
+      .catch((error) => {
+        console.error('Error fetching vouchers:', error);
+        message.error('Không thể tải danh sách voucher.');
+      });
+  }, []);
 
   const isFormValid = () => {
     return (
       orderInfo.province &&
       orderInfo.district &&
       orderInfo.ward &&
-      orderInfo.street.trim() !== '' &&
-      orderInfo.phoneNumber
+      orderInfo.street.trim() !== ''
     );
   };
+
+  const handleVoucherChange = (voucherId: number) => {
+    const selectedVoucher = vouchers.find((vc: any) => vc.id === voucherId);
+
+    if (selectedVoucher) {
+      const discountValue = Math.min((state.totalAmount * selectedVoucher.giaTri) / 100, selectedVoucher.giaTriMax);
+      setOrderInfo((prevState) => ({
+        ...prevState,
+        voucher: voucherId,
+        totalAmount: Math.max(0, prevState.originalTotalAmount - discountValue),
+      }));
+    }
+  };
+
 
   const handleOrderConfirm = async () => {
     if (!isFormValid()) {
@@ -129,42 +160,43 @@ const OrderConfirmation = () => {
       return;
     }
 
-    const sanPham = orderInfo.products.map((product) => ({
-      id: product.id,
-      ma: product.ma,
-      idSanPham: product.idSanPham,
-      idThuongHieu: product.idThuongHieu,
-      idChatLieuVo: product.idChatLieuVo,
-      idLoaiMu: product.idLoaiMu,
-      idKichThuoc: product.idKichThuoc,
-      idKhuyenMai: product.idKhuyenMai,
-      idLoaiKinh: product.idLoaiKinh,
-      idChatLieuDem: product.idChatLieuDem,
-      idMauSac: product.idMauSac,
-      sl: product.sl,
-      donGia: product.donGia,
-      moTaCT: product.moTaCT,
-      anh: product.anh,
-      tt: product.tt,
-      xuatXu: product.xuatXu,
-      nguoiTao: product.nguoiTao,
-      ngayTao: product.ngayTao,
-      nguoiCapNhat: product.nguoiCapNhat,
-      ngayCapNhat: product.ngayCapNhat,
-      formattedGia: product.formattedGia
+    const sanPham = orderInfo.products.map((pd) => ({
+      id: pd.id,
+      ma: pd.ma,
+      idSanPham: pd.idSanPham,
+      idThuongHieu: pd.idThuongHieu,
+      idChatLieuVo: pd.idChatLieuVo,
+      idLoaiMu: pd.idLoaiMu,
+      idKichThuoc: pd.idKichThuoc,
+      idKhuyenMai: pd.idKhuyenMai,
+      idLoaiKinh: pd.idLoaiKinh,
+      idChatLieuDem: pd.idChatLieuDem,
+      idMauSac: pd.idMauSac,
+      sl: pd.sl,
+      donGia: pd.donGia,
+      moTaCT: pd.moTaCT,
+      anh: pd.anh,
+      tt: pd.tt,
+      xuatXu: pd.xuatXu,
+      nguoiTao: pd.nguoiTao,
+      ngayTao: pd.ngayTao,
+      nguoiCapNhat: pd.nguoiCapNhat,
+      ngayCapNhat: pd.ngayCapNhat,
+      formattedGia: pd.formattedGia,
+      giaGiam: pd.giaGiam
     }));
 
     const request: OrderRequest = {
-      gioHangId: 0,
-      idTaiKhoan: 1,
-      diachi: `${orderInfo.street}, ${orderInfo.ward}, ${orderInfo.district}, ${orderInfo.province} - SĐT: ${orderInfo.phoneNumber}`,
+      voucherId: orderInfo.voucher,
+      idTaiKhoan: accountId,
+      diachi: ` ${orderInfo.street}, ${orderInfo.ward}, ${orderInfo.district}, ${orderInfo.province}`,
       sanPhamList: sanPham,
     };
 
     try {
       const response = await SubmitOrderConfirmation(request);
 
-      if (response.data === "Thanh cong") {
+      if (response.data === 'Thanh cong') {
         message.success('Đơn hàng của bạn đã được xác nhận!');
         navigate('/success');
       } else {
@@ -183,7 +215,22 @@ const OrderConfirmation = () => {
       <Row gutter={16}>
         <Col span={16}>
           <Card title="Thông Tin Sản Phẩm">
-            <div style={{ height: '600px', overflowY: 'auto' ,overflowX:'hidden' }}>
+            <Row>
+              <Text strong>Voucher:</Text>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Chọn voucher"
+                onChange={handleVoucherChange}
+                options={vouchers
+                  .sort((a: Voucher, b: Voucher) => b.giaTriMax - a.giaTriMax)
+                  .map((voucher: Voucher) => ({
+                    label: `${voucher.ten} - Giảm: ${voucher.giaTri}% (Tối đa: ${voucher.giaTriMax.toLocaleString()} đ) - Còn lại: ${voucher.gioihan}`,
+                    value: voucher.id,
+                  }))}
+              />
+            </Row>
+            <Divider />
+            <div style={{ overflowY: 'auto', overflowX: 'hidden' }}>
               {orderInfo.products.map((product) => (
                 <Row gutter={16} style={{ marginBottom: 20 }} key={product.id}>
                   <Col span={6}>
@@ -191,14 +238,15 @@ const OrderConfirmation = () => {
                   </Col>
                   <Col span={16}>
                     <Title level={3}>{product.idSanPham.ten}</Title>
-                    <Text>Số lượng: {product.sl}</Text>
+                    <Text>{product.idMauSac.ten} - {product.idKichThuoc.ten} </Text>
                     <br />
-                    <Text>{`Đơn giá: ${product.formattedGia}`}</Text>
+                    <Text>Số lượng: <b>{product.sl}</b> - Đơn giá: <b>{product.formattedGia}</b></Text>
                     <br />
                     <Title level={5}>Tổng: {`${(product.donGia * product.sl).toLocaleString()} đ`}</Title>
                   </Col>
                 </Row>
               ))}
+
             </div>
             <Divider />
             <Row>
@@ -209,85 +257,91 @@ const OrderConfirmation = () => {
           </Card>
         </Col>
 
+
         <Col span={8}>
           <Card title="Thông Tin Người Nhận">
-          <div style={{ height: '700px'}}>
-            <Row>
-              <Text strong>Tên người nhận: {user ? JSON.parse(user).name:""}</Text>
-            </Row>
-            <Row>
-              <Text strong>Tỉnh/Thành phố:</Text>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Chọn tỉnh/thành phố"
-                showSearch
-                optionFilterProp="label"
-                onSelect={(value, option: any) =>
-                  setOrderInfo({ ...orderInfo, province: value, district: null, ward: null })
-                }
-                options={provinces.map((province) => ({
-                  label: province.name,
-                  value: province.code,
-                }))}
-              />
-            </Row>
-            <Row>
-              <Text strong>Quận/Huyện:</Text>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Chọn quận/huyện"
-                showSearch
-                optionFilterProp="label"
-                disabled={!orderInfo.province}
-                onChange={(value, option: any) =>
-                  setOrderInfo({ ...orderInfo, district: value, ward: null })
-                }
-                options={districts.map((district) => ({
-                  label: district.name,
-                  value: district.code,
-                }))}
-              />
-            </Row>
-            <Row>
-              <Text strong>Xã/Phường:</Text>
-              <Select
-                style={{ width: '100%' }}
-                placeholder="Chọn xã/phường"
-                showSearch
-                optionFilterProp="label"
-                disabled={!orderInfo.district}
-                onChange={(value, option: any) =>
-                  setOrderInfo({ ...orderInfo, ward: value })
-                }
-                options={wards.map((ward) => ({
-                  label: ward.name,
-                  value: ward.code,
-                }))}
-              />
-            </Row>
-            <Row>
-              <Text strong>Số nhà và đường:</Text>
-              <Input
-                value={orderInfo.street}
-                onChange={(e) => setOrderInfo({ ...orderInfo, street: e.target.value })}
-              />
-            </Row>
-            <Row>
-              <Text strong>Số điện thoại:</Text>
-              <Input
-                value={orderInfo.phoneNumber}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (/^[0-9]*$/.test(value)) {
-                    setOrderInfo({ ...orderInfo, phoneNumber: value });
-                  } else {
-                    message.warning("Số điện thoại chỉ chứa ký tự số.");
+            <div style={{ height: '700px' }}>
+              <Row>
+                <Text strong>Tên người nhận: {user ? JSON.parse(user).name : ""}</Text>
+              </Row>
+              <Row>
+                <Text strong>Tỉnh/Thành phố:</Text>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Chọn tỉnh/thành phố"
+                  showSearch
+                  optionFilterProp="label"
+                  onSelect={(value, option: any) =>
+                    setOrderInfo({
+                      ...orderInfo,
+                      province: option.label, // Lưu tên tỉnh
+                      provinceCode: value, // Lưu mã tỉnh
+                      district: null,
+                      districtCode: null,
+                      ward: null,
+                      wardCode: null,
+                    })
                   }
-                }}
-              />
-            </Row>
-            <Row>
-              <Text strong>Phương thức thanh toán:</Text>
+                  options={provinces.map((province) => ({
+                    label: province.name,
+                    value: province.code,
+                  }))}
+                />
+              </Row>
+              <Row>
+                <Text strong>Quận/Huyện:</Text>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Chọn quận/huyện"
+                  showSearch
+                  optionFilterProp="label"
+                  disabled={!orderInfo.province}
+                  onChange={(value, option: any) =>
+                    setOrderInfo({
+                      ...orderInfo,
+                      district: option.label, // Lưu tên huyện
+                      districtCode: value, // Lưu mã huyện
+                      ward: null,
+                      wardCode: null,
+                    })
+                  }
+                  options={districts.map((district) => ({
+                    label: district.name,
+                    value: district.code,
+                  }))}
+                />
+              </Row>
+              <Row>
+                <Text strong>Xã/Phường:</Text>
+                <Select
+                  style={{ width: '100%' }}
+                  placeholder="Chọn xã/phường"
+                  showSearch
+                  optionFilterProp="label"
+                  disabled={!orderInfo.district}
+                  onChange={(value, option: any) =>
+                    setOrderInfo({
+                      ...orderInfo,
+                      ward: option.label, // Lưu tên xã
+                      wardCode: value, // Lưu mã xã
+                    })
+                  }
+                  options={wards.map((ward) => ({
+                    label: ward.name,
+                    value: ward.code,
+                  }))}
+                />
+              </Row>
+              <Row>
+                <Text strong>Số nhà và đường:</Text>
+                <Input
+                  value={orderInfo.street}
+                  onChange={(e) => setOrderInfo({ ...orderInfo, street: e.target.value })}
+                />
+              </Row>
+
+              <Row>
+                <Text strong>Phương thức thanh toán:</Text>
                 <Select
                   value={orderInfo.paymentMethod}
                   onChange={(value) => setOrderInfo({ ...orderInfo, paymentMethod: value })}
@@ -295,27 +349,28 @@ const OrderConfirmation = () => {
                     { value: 'COD', label: 'Thanh toán khi nhận hàng' },
                     { value: 'BANK', label: 'Chuyển khoản' },
                   ]} />
-            </Row>
-          
-            <Divider />
-            <Row style={{ textAlign: 'center' }}>
-              <Col span={24}>
-                <Button
-                  className="mb10"
-                  type="default"
-                  size="large"
-                  danger
-                  onClick={handleOrderConfirm}
-                  disabled={!isFormValid()}
-                  style={{ width: '200px', fontSize: '16px' }}>
-                  Xác Nhận Đơn Hàng
-                </Button>
-                <Button size="large" onClick={() => navigate(-1)} style={{ marginLeft: '10px' }}>
-                  Quay Lại
-                </Button>
-              </Col>
-            </Row>
-             </div>
+              </Row>
+
+
+              <Divider />
+              <Row style={{ textAlign: 'center' }}>
+                <Col span={24}>
+                  <Button
+                    className="mb10"
+                    type="default"
+                    size="large"
+                    danger
+                    onClick={handleOrderConfirm}
+                    disabled={!isFormValid()}
+                    style={{ width: '200px', fontSize: '16px' }}>
+                    Xác Nhận Đơn Hàng
+                  </Button>
+                  <Button size="large" onClick={() => navigate(-1)} style={{ marginLeft: '10px' }}>
+                    Quay Lại
+                  </Button>
+                </Col>
+              </Row>
+            </div>
           </Card>
         </Col>
       </Row>

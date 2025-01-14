@@ -11,23 +11,13 @@ const { Option } = Select;
 
 const user = localStorage.getItem("user");
 const userId = user ? JSON.parse(user).id : "";
-type Voucher = {
-    id: number;
-    code: string;
-    discount: number;
-};
 
-const vouchers: Voucher[] = [
-    { id: 1, code: 'DISCOUNT10', discount: 10 },
-    { id: 2, code: 'DISCOUNT20', discount: 20 },
-];
 
 const CartPage: React.FC = () => {
     const [cartItems, setCartItems] = useState<ProductDetails[]>([]);
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [currentItem, setCurrentItem] = useState<ProductDetails | null>(null);
-    const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
 
     useEffect(() => {
         GetCartProduct(userId).then(({ data }) => {
@@ -40,10 +30,12 @@ const CartPage: React.FC = () => {
     const handleCheckout = () => {
         const selectedProducts = cartItems.filter(item => selectedItems.includes(item.id));
         const totalAmount = selectedProducts.reduce((sum, item) => sum + (item.donGia * item.sl), 0);
+
+    
         const orderInfo = {
-            products: selectedProducts,
+            products: selectedProducts
+            ,
             totalAmount,
-            selectedVoucher: selectedVoucher?.code,
         };
 
         navigate('/checkout', { state: orderInfo });
@@ -69,11 +61,6 @@ const CartPage: React.FC = () => {
 
     const handleSelectAll = (checked: boolean) => {
         setSelectedItems(checked ? cartItems.map(item => item.id) : []);
-    };
-
-    const handleVoucherSelect = (value: number) => {
-        const selected = vouchers.find(voucher => voucher.id === value) || null;
-        setSelectedVoucher(selected);
     };
 
     const handleOpenModal = (item: ProductDetails) => {
@@ -114,9 +101,6 @@ const CartPage: React.FC = () => {
         },
         0
     );
-    const discountedAmount = selectedVoucher
-        ? totalAmount - (totalAmount * selectedVoucher.discount) / 100
-        : totalAmount;
 
     const columns = [
         {
@@ -154,7 +138,7 @@ const CartPage: React.FC = () => {
         {
             title: 'Đơn giá',
             dataIndex: 'price',
-            render: (_: any, item: ProductDetails) => `${item.donGia.toLocaleString()} đ`,
+            render: (_: any, item: ProductDetails) => `${item.formattedGia}`,
         },
         {
             title: 'Số lượng',
@@ -195,6 +179,7 @@ const CartPage: React.FC = () => {
                     <Row gutter={16}>
                         <Col span={16}>
                             <Table
+                            bordered
                                 columns={columns}
                                 dataSource={cartItems}
                                 rowKey="id"
@@ -214,23 +199,7 @@ const CartPage: React.FC = () => {
                         </Col>
                         <Col span={8}>
                             <Card title="Thông tin thanh toán" bordered>
-                                <p>Tổng tiền hàng: {totalAmount.toLocaleString()} đ</p>
-                                <Select
-                                    placeholder="Chọn voucher"
-                                    onChange={handleVoucherSelect}
-                                    style={{ width: '100%', marginBottom: 16 }}
-                                >
-                                    {vouchers.map(voucher => (
-                                        <Option key={voucher.id} value={voucher.id}>
-                                            {voucher.code} - Giảm {voucher.discount}%
-                                        </Option>
-                                    ))}
-                                </Select>
-                                {selectedVoucher && (
-                                    <p>Áp dụng voucher "{selectedVoucher.code}": -{selectedVoucher.discount}%</p>
-                                )}
-                                <br />
-                                <p>Tổng thanh toán: {discountedAmount.toLocaleString()} đ</p>
+                                <p>Tổng tiền:: {totalAmount.toLocaleString()} đ</p>
                                 <Button type="default" block disabled={!selectedItems.length} onClick={handleCheckout}>
                                     Mua hàng ({selectedItems.length})
                                 </Button>
