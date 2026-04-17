@@ -28,7 +28,7 @@ const SigninPage = () => {
                             localStorage.setItem('accessToken', data.token);
                             localStorage.setItem('user', JSON.stringify(data.user))
                             message.success("Đăng nhập thành công", 3);
-                            window.location.reload();
+                            window.location.href = "/";
                         }
                     }
 

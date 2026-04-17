@@ -7,9 +7,10 @@ export interface Promotion {
   ngayKT: string;
   ptkm: string;
   dkkm: string;
-  tt: boolean;
   nguoiTao: string;
-  ngayTao: string;
   nguoiCapNhat: string;
+  ngayTao: string;
   ngayCapNhat: string;
+  tt: boolean;
+  productDetailIds: number[];
 }

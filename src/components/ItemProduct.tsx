@@ -9,8 +9,8 @@ const ItemProduct = (props: Props) => {
     return (
         <div className="flex flex-wrap items-center">
             {props.products.map((product) => (
-                <div key={product.id} className="w-full px-3 mb-6 sm:w-1/2 md:w-1/3">
-                    <Link to={'/products/' + product.id}>
+                <div key={product.idSanPham.id} className="w-full px-3 mb-6 sm:w-1/2 md:w-1/3">
+                    <Link to={'/products/' + product.idSanPham.id}>
                         <div className="bg-white p-4 shadow-md rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105">
                             <div className="relative bg-gray-100">
                                 <img
@@ -29,6 +29,8 @@ const ItemProduct = (props: Props) => {
                                         {product.formattedGia}
                                     </p>
                                 </div>
+
+                        
                                 <div className="flex items-center">
                                     <div className=" flex">
                                         {[...Array(5)].map((_, index) => (

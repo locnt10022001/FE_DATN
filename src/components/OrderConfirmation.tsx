@@ -3,10 +3,11 @@ import { Row, Col, Button, Card, Input, Typography, Divider, Select, message } f
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ProductDetails } from "../types/productdetails";
-import { OrderRequest } from '../types/order';
+import { OrderRequest, ResponseOrder } from '../types/order';
 import { SubmitOrderConfirmation } from '../services/bill';
 import { GetAllVoucher } from '../services/voucher';
 import { Voucher } from '../types/voucher';
+import intansce from '../services/intansce';
 
 const { Title, Text } = Typography;
 const user = localStorage.getItem("user");
@@ -192,19 +193,41 @@ const OrderConfirmation = () => {
       diachi: ` ${orderInfo.street}, ${orderInfo.ward}, ${orderInfo.district}, ${orderInfo.province}`,
       sanPhamList: sanPham,
     };
+    if (orderInfo.paymentMethod === 'BANK') {
+      try {
+        const response = await SubmitOrderConfirmation(request);
+        const order: ResponseOrder = response.data;
 
-    try {
-      const response = await SubmitOrderConfirmation(request);
-
-      if (response.data === 'Thanh cong') {
-        message.success('Đơn hàng của bạn đã được xác nhận!');
-        navigate('/success');
-      } else {
-        message.error('Có lỗi xảy ra. Vui lòng thử lại!');
+        if (order.msg === 'Thanh cong') {
+          const response = await intansce.post('/thanhtoan/vnpay', { maHoaDon: order.maHD });
+          if (response.data) {
+            window.location.assign(response.data)
+          } else {
+            message.error('Không thể tạo URL thanh toán.');
+          }
+        } else {
+          message.error('Có lỗi xảy ra. Vui lòng thử lại!');
+        }
+      } catch (error: any) {
+        console.error(error);
+        message.error(error.response?.data?.message || 'Lỗi khi xử lý thanh toán.');
       }
-    } catch (error: any) {
-      console.error(error);
-      message.error(error.response?.data?.message || 'Không thể kết nối đến server, vui lòng thử lại.');
+
+    } else {
+      try {
+        const response = await SubmitOrderConfirmation(request);
+        const order: ResponseOrder = response.data;
+
+        if (order.msg === 'Thanh cong') {
+          message.success('Đơn hàng của bạn đã được xác nhận!');
+          navigate('/success');
+        } else {
+          message.error('Có lỗi xảy ra. Vui lòng thử lại!');
+        }
+      } catch (error: any) {
+        console.error(error);
+        message.error(error.response?.data?.message || 'Không thể kết nối đến server, vui lòng thử lại.');
+      }
     }
   };
 
@@ -347,7 +370,7 @@ const OrderConfirmation = () => {
                   onChange={(value) => setOrderInfo({ ...orderInfo, paymentMethod: value })}
                   options={[
                     { value: 'COD', label: 'Thanh toán khi nhận hàng' },
-                    { value: 'BANK', label: 'Chuyển khoản' },
+                    { value: 'BANK', label: 'VN PAY' },
                   ]} />
               </Row>
 

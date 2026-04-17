@@ -1,9 +1,9 @@
+import { useState, useEffect } from "react";
 import { Carousel, Row, Col, Typography, Button, Card, message, Input, Select, Pagination, Divider } from "antd";
 import { Link } from "react-router-dom";
 import "./home.css";
-import { useState, useEffect } from "react";
-import { SearchProductByName, GetAllProductDetail } from "../../../services/product";
-import { ProductDetails } from "../../../types/productdetails";
+import { SearchProductByName, GetManageProduct } from "../../../services/product";
+import { ProductResponse } from "../../../types/productresponse";
 import ItemProduct from "../../../components/ItemProduct";
 
 const { Title, Text } = Typography;
@@ -11,12 +11,13 @@ const { Option } = Select;
 
 const Homepage = () => {
   const [query, setQuery] = useState<string>("");
-  const [products, setProducts] = useState<ProductDetails[]>([]);
+  const [products, setProducts] = useState<ProductResponse[]>([]);
   const [sortOrder, setSortOrder] = useState<string>("asc");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize] = useState<number>(6);
+
   useEffect(() => {
-    GetAllProductDetail().then(({ data }) => {
+    GetManageProduct().then(({ data }) => {
       setProducts(data);
     });
   }, []);
@@ -38,11 +39,11 @@ const Homepage = () => {
 
   const handleSortChange = (value: string) => {
     setSortOrder(value);
-    const sortedProducts = [...products].sort((a, b) => {
-      if (value === "asc") return a.donGia - b.donGia;
-      return b.donGia - a.donGia;
-    });
-    setProducts(sortedProducts);
+    // const sortedProducts = [...products].sort((a, b) => {
+    //   if (value === "asc") return a.chiTietList..donGia - b.sanPham.donGia;
+    //   return b.sanPham.donGia - a.sanPham.donGia;
+    // });
+    // setProducts(sortedProducts);
   };
 
   const handlePageChange = (page: number) => {
@@ -142,7 +143,8 @@ const Homepage = () => {
             <Option value="desc">Giá: Cao đến Thấp</Option>
           </Select>
         </div>
-        <ItemProduct products={paginatedProducts} />
+        <ItemProduct products={paginatedProducts.flatMap(product => product.chiTietList.slice(0, 1))} />
+
         <div className="pagination mt-8 text-center">
           <Pagination
             current={currentPage}

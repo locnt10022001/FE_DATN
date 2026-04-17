@@ -51,6 +51,7 @@ const SignupPage = () => {
             matKhau: values.password,
             idVaiTro: { id: 3 }, // Value 3 là Normal User
             ten: values.name,
+            sdt: values.sdt
         };
 
         try {
@@ -107,6 +108,13 @@ const SignupPage = () => {
                         className="text-2xl font-extrabold leading-6 text-gray-800 mb-8">
                         Đăng ký tài khoản
                     </p>
+                    <Form.Item
+                        name="sdt"
+                        label="Số điện thoại"
+                        rules={[{ required: true, message: 'Vui lòng số điện thoại!', min: 10, max:12 }]}
+                    >
+                        <Input className="font-mono border border-indigo-600 h-10" placeholder="Nhập số điện thoại" />
+                    </Form.Item>
 
                     <Form.Item
                         name="name"
@@ -115,6 +123,7 @@ const SignupPage = () => {
                     >
                         <Input className="font-mono border border-indigo-600 h-10" placeholder="Nhập họ và tên" />
                     </Form.Item>
+
 
                     <Form.Item
                         name="username"

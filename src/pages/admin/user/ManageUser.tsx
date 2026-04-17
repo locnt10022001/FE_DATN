@@ -6,6 +6,8 @@ import dayjs from "dayjs";
 import { Account } from "../../../types/account";
 import { GetAllUser, GetRole } from "../../../services/user";
 import { AccoutnRole } from "../../../types/accountrole";
+import axios from "axios";
+import intansce from "../../../services/intansce";
 
 const AccountManagement: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -76,14 +78,14 @@ const AccountManagement: React.FC = () => {
       dataIndex: "email",
       key: "email",
     },
-    {
-      title: "Trạng Thái",
-      dataIndex: "tt",
-      key: "tt",
-      render: (value) => (
-        <Tag color={value ? "green" : "red"}>{value ? "Hoạt động" : "Bị khóa"}</Tag>
-      ),
-    },
+    // {
+    //   title: "Trạng Thái",
+    //   dataIndex: "tt",
+    //   key: "tt",
+    //   render: (value) => (
+    //     <Tag color={value ? "green" : "red"}>{value ? "Hoạt động" : "Bị khóa"}</Tag>
+    //   ),
+    // },
     {
       title: "Hành Động",
       key: "actions",
@@ -103,12 +105,12 @@ const AccountManagement: React.FC = () => {
             }} >
             Sửa
           </Button>
-          <Button
+          {/* <Button
             type="link"
             danger
             onClick={() => handleDelete(record.id)} >
             Xóa
-          </Button>
+          </Button> */}
         </Space>
       ),
     },
@@ -119,35 +121,46 @@ const AccountManagement: React.FC = () => {
     message.success("Xóa tài khoản thành công!");
   };
 
-  const handleOk = () => {
-    form.validateFields().then((values) => {
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
       const updatedAccount = {
         ...values,
+        matKhau: editingAccount?.matKhau ? editingAccount?.matKhau : "123456",
         gioiTinh: values.gioiTinh,
-        ngaySinh: values.ngaySinh.format("DD/MM/YYYY"),
-        id: editingAccount?.id || Date.now(),
-        idVaiTro: roles.find((role) => role.id === values.idVaiTro) || null, // Tìm vai trò từ danh sách roles
-        ngayTao: editingAccount ? editingAccount.ngayTao : dayjs().format("DD/MM/YYYY"),
-        ngayCapNhat: dayjs().format("DD/MM/YYYY"),
+        ngaySinh: values.ngaySinh.format("YYYY-MM-DD"),
+        idVaiTro: roles.find((role) => role.id === values.idVaiTro) || null,
+        ngayTao: null,
+        ngayCapNhat: null,
       };
 
       if (editingAccount) {
-        setAccounts((prev) =>
-          prev.map((account) =>
-            account.id === editingAccount.id ? updatedAccount : account
-          )
-        );
+        const response = await intansce.put(`/tai-khoan/update/${editingAccount.id}`, updatedAccount);
+        if (response) {
+          setAccounts((prev) =>
+            prev.map((account) =>
+              account.id === editingAccount.id ? updatedAccount : account
+            )
+          );
+          message.success("Cập nhật tài khoản thành công!");
+        }
       } else {
-        setAccounts((prev) => [...prev, updatedAccount]);
+        const response = await intansce.post('/tai-khoan/add', updatedAccount);
+        if (response) {
+          setAccounts((prev) => [...prev, updatedAccount]);
+          message.success("Thêm tài khoản thành công!");
+        }
       }
 
+      // Reset form và đóng modal
       form.resetFields();
       setEditingAccount(null);
       setIsModalOpen(false);
-      message.success("Lưu tài khoản thành công!");
-    });
+    } catch (error) {
+      console.error("Có lỗi xảy ra khi xử lý yêu cầu:", error);
+      message.error("Đã xảy ra lỗi khi xử lý tài khoản!");
+    }
   };
-
 
   return (
     <div>
@@ -206,7 +219,6 @@ const AccountManagement: React.FC = () => {
                 <Select>
                   <Select.Option value={true}>Nam</Select.Option>
                   <Select.Option value={false}>Nữ</Select.Option>
-                  <Select.Option value={null}>Khác</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -249,14 +261,14 @@ const AccountManagement: React.FC = () => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={12}>
+            {/* <Col span={12}>
               <Form.Item
                 label="Trạng Thái"
                 name="tt"
                 valuePropName="checked">
                 <Switch />
               </Form.Item>
-            </Col>
+            </Col> */}
           </Row>
         </Form>
       </Modal>

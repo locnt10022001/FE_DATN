@@ -5,6 +5,7 @@ import { GetCartProduct } from '../../../services/cart';
 import { useNavigate } from 'react-router-dom';
 import { ProductDetails } from '../../../types/productdetails';
 import EmptyCart from '../../../components/EmptyCart';
+import intansce from '../../../services/intansce';
 const { Title } = Typography;
 
 const { Option } = Select;
@@ -30,11 +31,8 @@ const CartPage: React.FC = () => {
     const handleCheckout = () => {
         const selectedProducts = cartItems.filter(item => selectedItems.includes(item.id));
         const totalAmount = selectedProducts.reduce((sum, item) => sum + (item.donGia * item.sl), 0);
-
-    
         const orderInfo = {
-            products: selectedProducts
-            ,
+            products: selectedProducts,
             totalAmount,
         };
 
@@ -47,14 +45,6 @@ const CartPage: React.FC = () => {
         );
         setCartItems(newCartItems);
     };
-
-    const handleDelete = (id: number) => {
-        const newCartItems = cartItems.filter(item => item.id !== id);
-        setCartItems(newCartItems);
-        setSelectedItems(selectedItems.filter(itemId => itemId !== id));
-        message.success("Đã xóa sản phẩm khỏi giỏ hàng");
-    };
-
     const handleSelectItem = (id: number, checked: boolean) => {
         setSelectedItems(prev => checked ? [...prev, id] : prev.filter(itemId => itemId !== id));
     };
@@ -102,6 +92,18 @@ const CartPage: React.FC = () => {
         0
     );
 
+    const handleDelete = async (productId: number) => {
+        try {
+            const response = await intansce.post("/online/gio-hang/xoa-san-pham?idTaiKhoan=" + userId + "&productId=" + productId);
+
+            if (response) {
+                window.location.reload()
+            }
+        } catch (error) {
+            throw new Error('Xóa sản phẩm không thành công');
+        }
+    };
+
     const columns = [
         {
             title: <Checkbox onChange={e => handleSelectAll(e.target.checked)} />,
@@ -145,9 +147,9 @@ const CartPage: React.FC = () => {
             dataIndex: 'quantity',
             render: (_: any, item: ProductDetails) => (
                 <InputNumber
-                    min={1}
                     value={item.sl}
-                    onChange={(value) => handleQuantityChange(value as number, item)}
+                    disabled
+                // onChange={(value) => handleQuantityChange(value as number, item)}
                 />
             ),
         },
@@ -167,7 +169,7 @@ const CartPage: React.FC = () => {
                     Xóa
                 </Button>
             ),
-        },
+        }
     ];
 
     return (
@@ -179,7 +181,7 @@ const CartPage: React.FC = () => {
                     <Row gutter={16}>
                         <Col span={16}>
                             <Table
-                            bordered
+                                bordered
                                 columns={columns}
                                 dataSource={cartItems}
                                 rowKey="id"

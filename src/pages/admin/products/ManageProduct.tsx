@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Space, Popconfirm, Divider, message, Upload, Col, Row } from 'antd';
+import { Table, Button, Modal, Form, Input, Space, Popconfirm, Divider, message, Select, Row, Col } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { PlusOutlined } from '@ant-design/icons';
+import Title from 'antd/es/typography/Title';
 import { ProductResponse } from '../../../types/productresponse';
 import { IProducts } from '../../../types/products';
 import { ProductDetails } from '../../../types/productdetails';
-import { AddNewDetailProduct, AddNewProduct, GetAllProductDetail, GetManageProduct, UpdateProduct } from '../../../services/product';
-import Title from 'antd/es/typography/Title';
+import { AddNewDetailProduct, AddNewProduct, GetManageProduct, UpdateProduct, UpdateProductDetails } from '../../../services/product';
+import { GetAllBrand, GetAllColor, GetAllCushionMaterial, GetAllHelmetGlass, GetAllHelmetType, GetAllShellMaterial, GetAllSize } from '../../../services/productingredients';
+import { HelmetType } from '../../../types/helmettype';
+import { Brand } from '../../../types/brand';
+import { Color } from '../../../types/helmetcolor';
+import { HelmetSize } from '../../../types/helmetsize';
+import { HelmetGlasses } from '../../../types/helmetglasses';
+import { ShellMaterial } from '../../../types/shellmaterial';
+import { CushionMaterial } from '../../../types/cushionmaterial';
+const user = localStorage.getItem("user");
 
 const ManageProduct: React.FC = () => {
   const [products, setProducts] = useState<ProductResponse[]>([]);
@@ -16,12 +25,46 @@ const ManageProduct: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState('');
+  const [loaiMu, setLoaiMu] = useState<HelmetType[]>([]);
+  const [thuongHieu, setThuongHieu] = useState<Brand[]>([]);
+  const [mauSac, setMauSac] = useState<Color[]>([]);
+  const [kichThuoc, setKichThuoc] = useState<HelmetSize[]>([]);
+  const [loaiKinh, setLoaiKinh] = useState<HelmetGlasses[]>([]);
+  const [chatLieuVo, setChatLieuVo] = useState<ShellMaterial[]>([]);
+  const [chatLieuDem, setChatLieuDem] = useState<CushionMaterial[]>([]);
 
   const isValidUrl = (url: string) => {
     const pattern = new RegExp('^(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9]+([\\-\\.]{1}[a-zA-Z0-9]+)*\\.[a-zA-Z]{2,5}(:[0-9]{1,5})?(\\/.*)?$');
     return pattern.test(url);
   };
 
+  const fetchIngredients = async () => {
+    try {
+      const [helmetTypes, brands, colors, sizes, helmetGlasses, shellMaterials, cushionMaterials] = await Promise.all([
+        GetAllHelmetType(),
+        GetAllBrand(),
+        GetAllColor(),
+        GetAllSize(),
+        GetAllHelmetGlass(),
+        GetAllShellMaterial(),
+        GetAllCushionMaterial()
+      ]);
+
+      setLoaiMu(helmetTypes.data);
+      setThuongHieu(brands.data);
+      setMauSac(colors.data);
+      setKichThuoc(sizes.data);
+      setLoaiKinh(helmetGlasses.data);
+      setChatLieuVo(shellMaterials.data);
+      setChatLieuDem(cushionMaterials.data);
+    } catch (error) {
+      console.error('Error fetching ingredients:', error);
+      message.error('Không thể tải dữ liệu thành phần');
+    }
+  };
+  useEffect(() => {
+    fetchIngredients();
+  }, []);
 
   useEffect(() => {
     if (selectedDetail && selectedDetail.anh) {
@@ -36,7 +79,6 @@ const ManageProduct: React.FC = () => {
 
   const handleAddProduct = () => {
     form.resetFields();
-
     setSelectedProduct(null);
     setIsProductModalOpen(true);
   };
@@ -62,6 +104,7 @@ const ManageProduct: React.FC = () => {
   };
 
   const handleEditDetail = (product: IProducts, detail: ProductDetails) => {
+    form.resetFields()
     form.setFieldsValue(detail);
     setSelectedProduct(product);
     setSelectedDetail(detail);
@@ -93,69 +136,80 @@ const ManageProduct: React.FC = () => {
     window.location.reload();
   };
 
-  const handleSaveDetail = async (values: ProductDetails) => {
+  const handleSaveDetail = async (values: any) => {
     try {
-      if (selectedDetail) {
-        // const response = await UpdateProductDetail(selectedProduct.id, values);
-        // if (response.status === 200) {
-        //   message.success('Cập nhật sản phẩm thành công.');
-        // } else {
-        //   message.error('Cập nhật sản phẩm thất bại, hãy thử lại sau. ');
-        // }
-      } else {
-        const detailProduct = {
-          "id": 100,
-          "ma": values.ma,
-          "idSanPham": values.idSanPham,
-          "idThuongHieu": values.idThuongHieu,
-          "idChatLieuVo": values.idChatLieuVo,
-          "idLoaiMu": values.idLoaiMu,
-          "idKichThuoc": values.idKichThuoc,
-          "idKhuyenMai": values.idKhuyenMai,
-          "idLoaiKinh": values.idLoaiKinh,
-          "idChatLieuDem": values.idChatLieuDem,
-          "idMauSac": values.idMauSac,
-          "sl": values.sl,
-          "donGia": values.donGia,
-          "moTaCT": values.moTaCT,
-          "anh": values.anh,
-          "tt": "Còn hàng",
-          "xuatXu": "Việt Nam",
-          "nguoiTao": "null",
-          "nguoiCapNhat": "null",
-          "ngayTao": "",
-          "ngayCapNhat": "",
-          "formattedGia": "",
-          "giaGiam":0
-        }
+      let response;
 
-        const response = await AddNewDetailProduct(detailProduct);
-        if (response.status === 200) {
-          message.success('Thêm sản phẩm thành công.');
-        } else {
-          message.error('Thêm sản phẩm thất bại, hãy thử lại sau.');
+      if (selectedDetail) {
+        response = await UpdateProductDetails(selectedDetail.id, {
+          ...values,
+          idSanPham: selectedDetail.idSanPham.id,
+          idKichThuoc: (values.kichThuoc === selectedDetail.idKichThuoc.ten) ? selectedDetail.idKichThuoc.id : kichThuoc.find(item => item.id === values.kichThuoc)?.id,
+          idThuongHieu: (values.thuongHieu === selectedDetail.idThuongHieu.ten) ? selectedDetail.idThuongHieu.id : thuongHieu.find(item => item.id === values.thuongHieu)?.id,
+          idChatLieuVo: (values.chatLieuVo === selectedDetail.idChatLieuVo.ten) ? selectedDetail.idChatLieuVo.id : chatLieuVo.find(item => item.id === values.thuongHieu)?.id,
+          idChatLieuDem: (values.chatLieuDem === selectedDetail.idChatLieuDem.ten) ? selectedDetail.idChatLieuDem.id : chatLieuDem.find(item => item.id === values.chatLieuDem)?.id,
+          idLoaiMu: (values.loaiMu === selectedDetail.idLoaiMu.ten) ? selectedDetail.idLoaiMu.id : loaiMu.find(item => item.id === values.loaiMu)?.id,
+          idLoaiKinh: (values.loaiKinh === selectedDetail.idLoaiKinh.ten) ? selectedDetail.idLoaiKinh.id : loaiKinh.find(item => item.id === values.loaiKinh)?.id,
+          idMauSac: (values.mauSac === selectedDetail.idMauSac.ten) ? selectedDetail.idMauSac.id : mauSac.find(item => item.id === values.mauSac)?.id,
+
+          tt: "Còn hàng",
+          xuatXu: "Việt Nam",
+          nguoiTao: user ? JSON.parse(user).name : '',
+          nguoiCapNhat: user ? JSON.parse(user).name : '',
+        });
+      } else {
+        if (!selectedProduct) {
+          message.error('Vui lòng chọn một sản phẩm trước khi thêm chi tiết.');
+          return;
         }
+        response = await AddNewDetailProduct({
+          ...values,
+          idKichThuoc: values.kichThuoc,
+          idSanPham: selectedProduct.id,
+
+          idThuongHieu: values.thuongHieu,
+          idChatLieuVo: values.chatLieuVo,
+          idChatLieuDem: values.chatLieuDem,
+          idLoaiMu: values.loaiMu,
+          idLoaiKinh: values.loaiKinh,
+          idMauSac: values.mauSac,
+
+          tt: "Còn hàng",
+          xuatXu: "Việt Nam",
+          nguoiTao: user ? JSON.parse(user).name : '',
+          nguoiCapNhat: user ? JSON.parse(user).name : '',
+        });
+      }
+      if (response.data === "Thanh cong") {
+        message.success(
+          selectedDetail
+            ? 'Cập nhật chi tiết sản phẩm thành công.'
+            : 'Thêm chi tiết sản phẩm thành công.'
+        );
+      } else {
+        message.error('Đã xảy ra lỗi khi lưu chi tiết sản phẩm, vui lòng thử lại.');
       }
     } catch (error) {
-      message.error(`Có lỗi xảy ra: ${error}`);
+      console.error('API Error:', error);
+      message.error('Lỗi kết nối API. Vui lòng kiểm tra và thử lại.');
+    } finally {
+      window.location.reload()
+      setIsDetailModalOpen(false);
     }
-    setIsDetailModalOpen(false);
-    window.location.reload();
-
   };
 
-  const handleDeleteDetail = (productId: number, detailId: number) => {
-    setProducts(prev =>
-      prev.map(prod =>
-        prod.sanPham.id === productId
-          ? {
-            ...prod,
-            chiTietList: prod.chiTietList.filter(detail => detail.id !== detailId),
-          }
-          : prod
-      )
-    );
-  };
+  // const handleDeleteDetail = (productId: number, detailId: number) => {
+  //   setProducts(prev =>
+  //     prev.map(prod =>
+  //       prod.sanPham.id === productId
+  //         ? {
+  //           ...prod,
+  //           chiTietList: prod.chiTietList.filter(detail => detail.id !== detailId),
+  //         }
+  //         : prod
+  //     )
+  //   );
+  // };
 
   const productColumns: ColumnsType<IProducts> = [
     {
@@ -174,12 +228,15 @@ const ManageProduct: React.FC = () => {
       dataIndex: 'moTa',
       key: 'moTa',
     },
-
     {
       title: 'Trạng thái',
       dataIndex: 'tt',
       key: 'tt',
-      sorter: (a, b) => a.tt.localeCompare(b.tt),
+      sorter: (a, b) => {
+        const ttA = a.tt || '';
+        const ttB = b.tt || '';
+        return ttA.localeCompare(ttB);
+      },
     },
     {
       title: 'Hành động',
@@ -247,63 +304,80 @@ const ManageProduct: React.FC = () => {
     },
     {
       title: 'Màu sắc',
-      dataIndex: 'mauSac',
-      key: 'mauSac',
-      width: 70,
+      dataIndex: 'idMauSac',
+      key: 'idMauSac',
+      render: (idMauSac) => {
+        const color = mauSac.find(item => item.id === idMauSac.id);
+        return color ? color.ten : 'Chưa có màu';
+      },
     },
     {
       title: 'Kích thước',
-      dataIndex: 'kichThuoc',
-      key: 'kichThuoc',
-      width: 75,
+      dataIndex: 'idKichThuoc',
+      key: 'idKichThuoc',
+      render: (idKichThuoc) => {
+        const color = kichThuoc.find(item => item.id === idKichThuoc.id);
+        return color ? color.ten : 'Chưa có màu';
+      }
     },
     {
       title: 'Loại mũ',
-      dataIndex: 'loaiMu',
-      key: 'loaiMu',
-      width: 75,
+      dataIndex: 'idLoaiMu',
+      key: 'idLoaiMu',
+      render: (idLoaiMu) => {
+        const color = loaiMu.find(item => item.id === idLoaiMu.id);
+        return color ? color.ten : 'Chưa có màu';
+      }
     },
     {
       title: 'Thương hiệu',
-      dataIndex: 'thuongHieu',
-      key: 'thuongHieu',
-
-      width: 90,
+      dataIndex: 'idThuongHieu',
+      key: 'idThuongHieu',
+      render: (idThuongHieu) => {
+        const color = thuongHieu.find(item => item.id === idThuongHieu.id);
+        return color ? color.ten : 'Chưa có màu';
+      }
     }, {
       title: 'Số lượng',
       dataIndex: 'sl',
       key: 'sl',
-      width: 75,
     },
     {
       title: 'Đơn giá',
       dataIndex: 'formattedGia',
       key: 'formattedGia',
-      width: 120,
     },
     {
       title: 'Hành động',
       key: 'actions',
       render: (_, detail) => (
-        <Space>
+        <Space >
           <Button
             type="primary"
             style={{ backgroundColor: "cadetblue", color: 'white' }}
             onClick={() => handleEditDetail(selectedProduct!, detail)}>
             Sửa
           </Button>
-          <Popconfirm
+
+          {/* <Popconfirm
             title="Bạn có chắc chắn muốn xóa chi tiết này?"
             okType='default'
-            onConfirm={() => handleDeleteDetail(selectedProduct!.id, detail.id)}>
+            onConfirm={() => {
+              if (selectedProduct?.id && detail.id) {
+                handleDeleteDetail(selectedProduct.id, detail.id);
+              } else {
+                message.error('Không có thông tin chi tiết để xóa.');
+              }
+            }}>
             <Button type="primary" danger>
               Xóa
             </Button>
-          </Popconfirm>
+          </Popconfirm> */}
         </Space>
       ),
     },
   ];
+
   return (
     <div>
       <Title level={1}>Quản lý sản phẩm</Title>
@@ -405,7 +479,6 @@ const ManageProduct: React.FC = () => {
         ]}
         width={600}
         centered >
-
         <Form form={form} onFinish={handleSaveDetail} initialValues={selectedDetail || undefined}>
           <Row gutter={16}>
             <Col span={12}>
@@ -416,49 +489,92 @@ const ManageProduct: React.FC = () => {
                 <Input />
               </Form.Item>
             </Col>
-
             <Col span={12}>
               <Form.Item
-                name="mauSac"
                 label="Màu sắc"
-                rules={[{ required: true, message: 'Vui lòng nhập màu sắc' }]}>
-                <Input />
+                name="mauSac"
+                initialValue={selectedDetail ? mauSac.find(item => item.id === selectedDetail.idMauSac.id)?.ten : undefined}>
+                <Select>
+                  {mauSac.map((item) => (
+                    <Select.Option key={item.id} value={item.id}>{item.ten}</Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
-
             <Col span={12}>
-              <Form.Item
+              <Form.Item label="Kích thước"
                 name="kichThuoc"
-                label="Kích thước"
-                rules={[{ required: true, message: 'Vui lòng nhập kích thước' }]}>
-                <Input />
+                initialValue={selectedDetail ? kichThuoc.find(item => item.id === selectedDetail.idKichThuoc.id)?.ten : undefined}>
+                <Select>
+                  {kichThuoc.map((item) => (
+                    <Select.Option key={item.id} value={item.id}>{item.ten}</Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
-
             <Col span={12}>
-              <Form.Item
+              <Form.Item label="Loại mũ"
                 name="loaiMu"
-                label="Loại mũ"
-                rules={[{ required: true, message: 'Vui lòng nhập loại mũ' }]}>
-                <Input />
+                initialValue={selectedDetail ? loaiMu.find(item => item.id === selectedDetail.idLoaiMu.id)?.ten : undefined}>
+                <Select>
+                  {loaiMu.map((item) => (
+                    <Select.Option key={item.id} value={item.id}>{item.ten}</Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Thương hiệu" name="thuongHieu"
+                initialValue={selectedDetail ? thuongHieu.find(item => item.id === selectedDetail.idThuongHieu.id)?.ten : undefined}>
+                <Select>
+                  {thuongHieu.map((item) => (
+                    <Select.Option key={item.id} value={item.id}>{item.ten}</Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Chất liệu đệm"
+                name="chatLieuDem"
+                initialValue={selectedDetail ? chatLieuDem.find(item => item.id === selectedDetail.idChatLieuDem.id)?.ten : undefined}>
+                <Select>
+                  {chatLieuDem.map((item) => (
+                    <Select.Option key={item.id} value={item.id}>{item.ten}</Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="Chất liệu vỏ"
+                name="chatLieuVo"
+                initialValue={selectedDetail ? chatLieuVo.find(item => item.id === selectedDetail.idChatLieuVo.id)?.ten : undefined}>
+                <Select>
+                  {chatLieuVo.map((item) => (
+                    <Select.Option key={item.id} value={item.id}>{item.ten}</Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
 
             <Col span={12}>
-              <Form.Item
-                name="idThuongHieu.ten"
-                label="Thương hiệu"
-                rules={[{ required: true, message: 'Vui lòng nhập thương hiệu' }]}>
-                <Input />
+              <Form.Item label="Loại kính"
+                name="loaiKinh"
+                initialValue={selectedDetail ? loaiKinh.find(item => item.id === selectedDetail.idLoaiKinh.id)?.ten : undefined}>
+                <Select>
+                  {loaiKinh.map((item) => (
+                    <Select.Option key={item.id} value={item.id}>{item.ten}</Select.Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
-
             <Col span={12}>
               <Form.Item
                 name="sl"
                 label="Số lượng"
+
                 rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}>
-                <Input type="number" />
+                <Input type="number" min={1} />
               </Form.Item>
             </Col>
 
@@ -500,7 +616,7 @@ const ManageProduct: React.FC = () => {
                   <img
                     src={imageUrl}
                     alt="Ảnh tải lên"
-                    style={{ maxWidth: '260px', maxHeight: '260px', objectFit: 'contain',  borderRadius: '8px' }}
+                    style={{ maxWidth: '260px', maxHeight: '260px', objectFit: 'contain', borderRadius: '8px' }}
                   />
                 </div>
               )}
@@ -513,4 +629,3 @@ const ManageProduct: React.FC = () => {
 };
 
 export default ManageProduct;
-

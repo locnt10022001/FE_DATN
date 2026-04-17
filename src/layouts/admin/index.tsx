@@ -9,18 +9,14 @@ const LayoutAdmin: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  const Logout = () => {
-    localStorage.clear();
-    window.location.reload();
-  };
-
   const user: any = localStorage.getItem('user')
   const parseUser = JSON.parse(user);
   if (parseUser) {
-    parseUser.role === 'Admin' ? console.log('ok') : navigate('/signin')
+    parseUser.role === 'Admin' ? console.log('ok') : navigate('/notAdmin')
   } else {
-    navigate('/signin')
+    navigate('/notAdmin')
   }
+
   return (
     <Layout >
       <HeaderLayoutAdmin />

@@ -44,6 +44,9 @@ export const AddProductToBill = (request: ThemSanPhamRequest) => {
 export const SubmitOrderConfirmation = (request: OrderRequest) => {
     return intance.post('/online/dat-hang', request);
 };
+export const ThanhToanVnPay = (request: string) => {
+    return intance.post('/thanh-toan-vnpay', request);
+};
 export const UpdateBillStatus = (id: number, status: string) => {
     return intance.post('/online/trang-thai?hoaDonId=' + id + '&trangThaiMoi=' + status);
 };

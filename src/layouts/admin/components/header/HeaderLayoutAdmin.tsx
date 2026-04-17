@@ -17,7 +17,7 @@ const HeaderLayoutAdmin = () => {
           />
           DASHBOARD
         </Link>
-        <div className="flex items-center gap-2 w-full max-w-[500px]">
+        {/* <div className="flex items-center gap-2 w-full max-w-[500px]">
           <Input
             placeholder="Tìm kiếm"
             className="w-full"
@@ -26,12 +26,7 @@ const HeaderLayoutAdmin = () => {
           <Button className="bg-black text-white">
             <SearchOutlined />
           </Button>
-        </div>
-        <div className="hidden lg:block">
-          <Typography.Title level={5} className="!mb-0 !text-white cursor-pointer">
-            ADMIN
-          </Typography.Title>
-        </div>
+        </div> */}
       </div>
     </Layout.Header>
   );

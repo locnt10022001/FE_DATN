@@ -7,6 +7,7 @@ import { HelmetGlasses } from "./helmetglasses"
 import { HelmetType } from "./helmettype"
 import { CushionMaterial } from "./cushionmaterial"
 import { Color } from "./helmetcolor"
+import { Promotion } from "./promotions"
 
 export interface ProductDetails {
     id: number,
@@ -16,7 +17,7 @@ export interface ProductDetails {
     idChatLieuVo: ShellMaterial,
     idLoaiMu: HelmetType,
     idKichThuoc: HelmetSize,
-    idKhuyenMai: null,
+    idKhuyenMai: Promotion,
     idLoaiKinh: HelmetGlasses,
     idChatLieuDem: CushionMaterial,
     idMauSac: Color,

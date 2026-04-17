@@ -26,7 +26,7 @@ export default function HeaderLayoutClient() {
     async function handleLogout() {
         localStorage.removeItem("user");
         await message.warning("Đã đăng xuất", 2, () => { });
-        window.location.reload();
+        window.location.href = "/";
     }
     return (
         <div className="bg-white">

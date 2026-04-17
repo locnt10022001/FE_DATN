@@ -11,6 +11,21 @@ export const GetAllBrand = () => {
     return intansce.get('/thuonghieu/danhsach')
 }
 
+export const GetAllSize = () => {
+    return intansce.get('/kichthuoc/danhsach')
+}
+
+export const GetAllHelmetGlass = () => {
+    return intansce.get('/loaikinh/danhsach')
+}
+
+export const GetAllShellMaterial= () => {
+    return intansce.get('/chatlieuvo/danhsach')
+}
+export const GetAllCushionMaterial = () => {
+    return intansce.get('/chatlieudem/danhsach')
+}
+
 export const CreateContact = (data: IContact) => {
     return intansce.post('/contacts', data)
 }

@@ -9,6 +9,7 @@ import { format, parseISO } from 'date-fns';
 import { ProductDetails } from '../../../types/productdetails';
 import ListItemsOrder from '../../../components/ListItemsOrder';
 
+import dayjs from 'dayjs';
 const ManageBill = () => {
   const [bills, setBills] = useState<IBill[]>([]);
   useEffect(() => {
@@ -52,45 +53,37 @@ const ManageBill = () => {
       key: 'id'
     },
     {
-      title: 'Ma HD',
+      title: 'Mã hoá đơn',
       dataIndex: 'ma',
       key: 'ma'
     },
+    // {
+    //   title: 'Loai HD',
+    //   dataIndex: 'loaiHD',
+    //   key: 'loaiHD'
+    // },
     {
-      title: 'Loai HD',
-      dataIndex: 'loaiHD',
-      key: 'loaiHD'
-    },
-    {
-      title: 'Tong Tien',
+      title: 'Tổng tiền',
       dataIndex: 'tien',
       key: 'tien'
     },
+    // {
+    //   title: 'So Tien Da Tra',
+    //   dataIndex: 'soTien',
+    //   key: 'soTien'
+    // },
     {
-      title: 'So Tien Da Tra',
-      dataIndex: 'soTien',
-      key: 'soTien'
-    },
-    {
-      title: 'Ngay Tao',
+      title: 'Ngày tạo',
       dataIndex: 'ngayTao',
-      key: 'ngayTao'
+      key: 'ngayTao',
     },
     {
-      title: 'San Pham',
-      key: 'items',
-      render: (bill: ProductDetails) =>
-        <>
-          {/* <ListItemsOrder bill={bill} /> */}
-        </>
-    },
-    {
-      title: 'Trang Thai',
+      title: 'Trạng thái',
       dataIndex: 'tt',
       key: 'tt'
     },
     {
-      title: 'Hanh Dong',
+      title: 'Hành động',
       render: (item: IBill) =>
         <>
           <Link to={`/admin/order/bill/${item.ma}/update`}>
@@ -98,12 +91,12 @@ const ManageBill = () => {
               <EditOutlined disabled={item.tt === "Đã thanh toán"} />
             </button>
           </Link>
-          <button type="button"
+          {/* <button type="button"
             disabled={true}
             onClick={() => HandleRemoveBill(item.id)}
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
             <DeleteOutlined />
-          </button>
+          </button> */}
         </>
     },
   ];

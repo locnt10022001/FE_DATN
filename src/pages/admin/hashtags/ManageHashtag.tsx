@@ -7,6 +7,9 @@ import "dayjs/locale/vi";
 import { Promotion } from "../../../types/promotions";
 import { GetAllPromotion } from "../../../services/voucher";
 import Title from "antd/es/typography/Title";
+import intansce from "../../../services/intansce";
+import { GetAllProductDetail } from "../../../services/product";
+import { ProductDetails } from "../../../types/productdetails";
 
 dayjs.extend(localizedFormat);
 dayjs.locale("vi");
@@ -15,17 +18,16 @@ const PromotionManagement: React.FC = () => {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
-  const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(
-    null
-  );
-
-  const [products, setProducts] = useState<string[]>([]);
+  const [editingPromotion, setEditingPromotion] = useState<Promotion | null>( null);
+  const [products, setProducts] = useState<ProductDetails[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
 
   useEffect(() => {
 
-    
-    setProducts(["Sản phẩm A", "Sản phẩm B", "Sản phẩm C", "Sản phẩm D"]);
+    GetAllProductDetail().then(({ data }) => {
+      setProducts((data))
+    });
 
     GetAllPromotion().then(({ data }) => {
       try {
@@ -60,10 +62,10 @@ const PromotionManagement: React.FC = () => {
       key: "ten",
     },
     {
-      title: "Giá Trị Khuyến Mãi (%)",
+      title: "Giá Trị Khuyến Mãi",
       dataIndex: "giaTri",
       key: "giaTri",
-      render: (value) => `${value}%`,
+      render: (value) => `${value} đ`,
     },
     {
       title: "Ngày Bắt Đầu",
@@ -78,14 +80,6 @@ const PromotionManagement: React.FC = () => {
       render: (value) => dayjs(value).format("DD/MM/YYYY"),
     },
     {
-      title: "Trạng Thái",
-      dataIndex: "tt",
-      key: "tt",
-      render: (value) => (
-        <Tag color={value ? "green" : "red"}>{value ? "Kích hoạt" : "Vô hiệu"}</Tag>
-      ),
-    },
-    {
       title: "Hành Động",
       key: "actions",
       render: (_, record) => (
@@ -98,9 +92,9 @@ const PromotionManagement: React.FC = () => {
                 ...record,
                 ngayBD: dayjs(record.ngayBD),
                 ngayKT: dayjs(record.ngayKT),
-                // products: record.products || [],
+                products: record.productDetailIds || [],
               });
-              // setSelectedProducts(record.products || []);
+              // setSelectedProducts(record.productDetailIds);
               setIsModalOpen(true);
             }}
           >
@@ -122,34 +116,48 @@ const PromotionManagement: React.FC = () => {
     setPromotions((prev) => prev.filter((promotion) => promotion.id !== id));
   };
 
-  const handleOk = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const updatedPromotion = {
-          ...values,
-          ngayBD: values.ngayBD.format("YYYY-MM-DD"),
-          ngayKT: values.ngayKT.format("YYYY-MM-DD"),
-          products: selectedProducts,
-          id: editingPromotion?.id,
-        };
-
-        if (editingPromotion) {
-          setPromotions((prev) =>
-            prev.map((promotion) =>
-              promotion.id === editingPromotion.id ? updatedPromotion : promotion
-            )
-          );
-        } else {
-          setPromotions((prev) => [...prev, updatedPromotion]);
-        }
-
-        form.resetFields();
-        setSelectedProducts([]);
-        setEditingPromotion(null);
-        setIsModalOpen(false);
-      })
-      .catch((info) => console.error("Validate Failed:", info));
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+  
+      const now = dayjs().format("YYYY-MM-DDTHH:mm:ss"); // Thời gian hiện tại
+  
+      const payload: Promotion = {
+        id: editingPromotion?.id || Date.now(), // Sử dụng ID cũ hoặc tạo ID tạm thời
+        ma: values.ma,
+        ten: values.ten,
+        giaTri: values.giaTri,
+        ngayBD: values.ngayBD.format("YYYY-MM-DDTHH:mm:ss"),
+        ngayKT: values.ngayKT.format("YYYY-MM-DDTHH:mm:ss"),
+        ptkm: values.ptkm,
+        dkkm: values.dkkm,
+        nguoiTao: editingPromotion ? editingPromotion.nguoiTao : "Admin",
+        nguoiCapNhat: "Admin",
+        ngayTao: editingPromotion ? editingPromotion.ngayTao : now,
+        ngayCapNhat: now,
+        tt:true,
+        productDetailIds: selectedProducts.map((product) => parseInt(product, 10)),
+      };
+  
+      if (editingPromotion) {
+        await intansce.put("/khuyenmai/sua-khuyen-mai", payload);
+        message.success("Cập nhật khuyến mãi thành công!");
+        setPromotions((prev) =>
+          prev.map((promotion) => (promotion.id === editingPromotion.id ? payload : promotion))
+        );
+      } else {
+        const response = await intansce.post("/khuyenmai/khuyen-mai", payload);
+        message.success("Thêm khuyến mãi thành công!");
+        setPromotions((prev) => [...prev, { ...payload, id: response.data.id }]);
+      }
+  
+      form.resetFields();
+      setSelectedProducts([]);
+      setEditingPromotion(null);
+      setIsModalOpen(false);
+    } catch (validationError) {
+      console.error("Validation Failed:", validationError);
+    }
   };
 
   return (
@@ -193,11 +201,11 @@ const PromotionManagement: React.FC = () => {
             <Input />
           </Form.Item>
           <Form.Item
-            label="Giá Trị Khuyến Mãi (%)"
+            label="Giá Trị Khuyến Mãi"
             name="giaTri"
             rules={[{ required: true, message: "Vui lòng nhập giá trị khuyến mãi" }]}
           >
-            <InputNumber min={0} max={100} />
+            <InputNumber min="0" />
           </Form.Item>
           <Form.Item
             label="Ngày Bắt Đầu"
@@ -234,28 +242,20 @@ const PromotionManagement: React.FC = () => {
               mode="multiple"
               placeholder="Chọn sản phẩm"
               value={selectedProducts}
-              onChange={setSelectedProducts}
-            >
+              onChange={setSelectedProducts}>
               {products.map((product) => (
-                <Select.Option key={product} value={product}>
-                  {product}
+                <Select.Option key={product.id} value={product.id}>
+                  {product.idSanPham.ten} - {product.ma} - {product.idKichThuoc.ten} - {product.idMauSac.ten}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
           <Form.Item
             label="Điều Kiện Khuyến Mãi"
-            name="dkkm"
-          >
+            name="dkkm">
             <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item
-            label="Trạng Thái"
-            name="tt"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
+          
         </Form>
       </Modal>
     </div>

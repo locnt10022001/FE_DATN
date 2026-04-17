@@ -11,6 +11,7 @@ import {
     SmileOutlined
 } from '@ant-design/icons';
 import { BillResponse } from '../../../types/billresponse';
+import { ProductDetails } from '../../../types/productdetails';
 
 const { Title, Text } = Typography;
 const { Step } = Steps;
@@ -114,9 +115,19 @@ const OnlineBillDetails = () => {
             ),
         },
         {
+            title: 'Mã sản phẩm',
+            dataIndex: 'ma',
+            key: 'ma',
+        },
+        {
             title: 'Tên sản phẩm',
             dataIndex: 'name',
             key: 'name',
+        },
+        {
+            title: 'Phân loại',
+            dataIndex: 'category',
+            name: 'category'
         },
         {
             title: 'Số lượng',
@@ -150,8 +161,10 @@ const OnlineBillDetails = () => {
 
     const listDataGH = Array.isArray(orderDetails.chiTietList) ? orderDetails.chiTietList.map((item: BillDetail) => {
         return {
+            ma:item.idSPCT.ma,
             imageUrl: item.idSPCT.anh,
             name: item.idSPCT.idSanPham.ten,
+            category: `${item.idSPCT.idKichThuoc.ten} - ${item.idSPCT.idMauSac.ten}`,
             quantity: item.sl,
             price: item.idSPCT.donGia,
             totalPrice: item.idSPCT.donGia * item.sl,

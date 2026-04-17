@@ -1,8 +1,9 @@
 export interface IProducts {
   id: number,
   ten: string,
-  moTa: string,
-  tt: string
+  phanLoai :string,
+  tt: string,
+  soluong:string
 }
 
 export interface IProductBill{

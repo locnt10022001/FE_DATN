@@ -28,6 +28,7 @@ import OrderConfirmation from "../components/OrderConfirmation";
 import OrderSuccess from "../components/SuccessPage";
 import ManageColor from "../pages/admin/abouts/ManageColor";
 import HelmetTypeManagement from "../pages/admin/abouts/HelmetTypeManagement";
+import WarningNotAdmin from "../pages/WarningNotAdmin";
 
 const Router = () => {
     return (
@@ -101,6 +102,7 @@ const Router = () => {
                     </Route>
                 </Route>
                 <Route path='*' element={<NotFoundPage />}></Route>
+                <Route path='/notAdmin' element={<WarningNotAdmin />}></Route>
             </Routes>
         </BrowserRouter>
     )

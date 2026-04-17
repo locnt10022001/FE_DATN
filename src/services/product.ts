@@ -27,7 +27,6 @@ export const AddNewDetailProduct = (data: ProductDetails) => {
         idChatLieuVo: { id: data.idChatLieuVo },
         idLoaiMu: { id: data.idLoaiMu },
         idKichThuoc: { id: data.idKichThuoc },
-        idKhuyenMai: { id: data.idKhuyenMai },
         idLoaiKinh: { id: data.idLoaiKinh },
         idChatLieuDem: { id: data.idChatLieuDem },
         idMauSac: { id: data.idMauSac },
@@ -50,7 +49,32 @@ export const UpdateProduct = (id: number, data: IProducts) => {
         tt: data.tt,
     };
     return intansce.put(`/sanpham/update/${id}`, updatedData);
-  };
+};
+
+export const UpdateProductDetails = (id: number, data: ProductDetails) => {
+    const updatedData = {
+        ma: data.ma,
+        idSanPham: { id: data.idSanPham },
+        idThuongHieu: { id: data.idThuongHieu },
+        idChatLieuVo: { id: data.idChatLieuVo },
+        idLoaiMu: { id: data.idLoaiMu },
+        idKichThuoc: { id: data.idKichThuoc },
+        idLoaiKinh: { id: data.idLoaiKinh },
+        idChatLieuDem: { id: data.idChatLieuDem },
+        idMauSac: { id: data.idMauSac },
+        sl: data.sl,
+        donGia: data.donGia,
+        moTaCT: data.moTaCT,
+        anh: data.anh,
+        tt: data.tt,
+        xuatXu: data.xuatXu,
+        nguoiTao: data.nguoiTao,
+        nguoiCapNhat: data.nguoiCapNhat,
+    };
+    return intansce.put(`/spchitiet/update/${id}`, updatedData);
+};
+
+
 
 export const GetProductById = (id: number) => {
     return intansce.get('/sanpham/' + id)

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Row, Col, Typography, Button, Rate, InputNumber, Tabs, Card, message, Select, Divider, Modal, } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "./DetailProduct.css";
 import { GetProductById } from "../services/product";
 import { AddProductToCart } from "../services/bill";
 import { ProductResponse } from "../types/productresponse";
-import { Signin } from "../services/auth";
-import SignupPage from "../pages/client/SignupPage";
 import SigninPage from "../pages/client/SigninPage";
 
 const { Title, Text } = Typography;
@@ -26,6 +24,7 @@ const ProductDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const accountId = user ? JSON.parse(user).id : "";
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (productId !== null && !isNaN(productId)) {
@@ -76,7 +75,7 @@ const ProductDetail: React.FC = () => {
         }
         try {
             if (!user) {
-                message.error({ content: "Bạn phải đăng nhập trước" });
+                setIsModalVisible(true);
             } else {
                 const loading = await message.loading({ content: "Đang thêm sản phẩm vào giỏ hàng...", key: 'loading', duration: 2 });
                 if (loading) {
@@ -90,9 +89,59 @@ const ProductDetail: React.FC = () => {
             message.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
         }
     };
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
+    };
 
     const handleBuyNow = () => {
-        message.success("Đang chuyển đến trang thanh toán...");
+        if (!selectedDetail || quantity < 1) {
+            message.error("Vui lòng chọn đầy đủ thông tin sản phẩm.");
+            return;
+        }
+        try {
+            if (!user) {
+                setIsModalVisible(true);
+            } else {
+                const productDetails = [
+                    {
+                        id: selectedDetail?.id,
+                        ma: selectedDetail?.ma,
+                        idSanPham: selectedDetail?.idSanPham,
+                        idThuongHieu: selectedDetail?.idThuongHieu,
+                        idChatLieuVo: selectedDetail?.idChatLieuVo,
+                        idLoaiMu: selectedDetail?.idLoaiMu,
+                        idKhuyenMai: selectedDetail?.idKhuyenMai,
+                        idLoaiKinh: selectedDetail?.idLoaiKinh,
+                        idChatLieuDem: selectedDetail?.idChatLieuDem,
+                        moTaCT: selectedDetail?.moTaCT,
+                        tt: selectedDetail?.tt,
+                        xuatXu: selectedDetail?.xuatXu,
+                        nguoiTao: selectedDetail?.nguoiTao,
+                        ngayTao: selectedDetail?.ngayTao,
+                        nguoiCapNhat: selectedDetail?.nguoiCapNhat,
+                        ngayCapNhat: selectedDetail?.ngayCapNhat,
+                        giaGiam: selectedDetail?.giaGiam,
+                        sl: quantity || 1,
+                        donGia: selectedDetail?.donGia || 0,
+                        anh: selectedDetail?.anh || "",
+                        idMauSac: {
+                            id: selectedDetail?.idMauSac?.id || 0,
+                            ten: selectedColor || "",
+                        },
+                        idKichThuoc: {
+                            id: selectedDetail?.idKichThuoc?.id || 0,
+                            ten: selectedSize || "",
+                        },
+                        formattedGia: selectedDetail?.formattedGia
+                    },
+                ];
+                const totalAmount = (selectedDetail?.donGia || 0) * (quantity || 1);
+                navigate("/checkout", { state: { products: productDetails, totalAmount } });
+            }
+        } catch {
+            message.error("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
+        }
     };
 
     return (
@@ -138,7 +187,7 @@ const ProductDetail: React.FC = () => {
                                     </div>
                                 ) : (
                                     <div>
-                                        <Title style={{ fontWeight: "bold" }}level={1}>{selectedDetail?.formattedGia || "Loading..."}</Title>
+                                        <Title style={{ fontWeight: "bold" }} level={1}>{selectedDetail?.formattedGia || "Loading..."}</Title>
                                     </div>
                                 )}
                                 <div className="color-size-section">
@@ -179,10 +228,16 @@ const ProductDetail: React.FC = () => {
                                             min={1}
                                             max={selectedDetail?.sl}
                                             value={quantity}
-                                            onChange={(value) => setQuantity(value || 1)}
-                                        />
+                                            onChange={(value) => setQuantity(value || 1)} />
                                         <Text> (Còn lại: {selectedDetail?.sl || 0})</Text>
+                                        <br />
+
                                     </div>
+                                    {selectedDetail?.sl === 0 && (
+                                        <Text type="danger" style={{ display: "block", marginTop: 8 }}>
+                                            Sản phẩm này hiện tại đã hết hàng, <br />vui lòng chọn kích cỡ, màu sắc khác hoặc chọn sản phẩm khác
+                                        </Text>
+                                    )}
                                 </div>
                                 <div className="button-group mt-20" >
                                     <Button
@@ -190,55 +245,16 @@ const ProductDetail: React.FC = () => {
                                         icon={<ShoppingCartOutlined />}
                                         onClick={handleAddToCart}
                                         style={{ marginRight: 10 }}
-                                        disabled={!selectedColor || !selectedSize}>
+                                        disabled={!selectedColor || !selectedSize || selectedDetail?.sl == 0}>
                                         Thêm vào giỏ hàng
                                     </Button>
-                                    <Link
-                                        to="/checkout"
-                                        state={{
-                                            products: [
-                                                {
-                                                    id: selectedDetail?.id,
-                                                    ma: selectedDetail?.ma,
-                                                    idSanPham: selectedDetail?.idSanPham,
-                                                    idThuongHieu: selectedDetail?.idThuongHieu,
-                                                    idChatLieuVo: selectedDetail?.idChatLieuVo,
-                                                    idLoaiMu: selectedDetail?.idLoaiMu,
-                                                    idKhuyenMai: selectedDetail?.idKhuyenMai,
-                                                    idLoaiKinh: selectedDetail?.idLoaiKinh,
-                                                    idChatLieuDem: selectedDetail?.idChatLieuDem,
-                                                    moTaCT: selectedDetail?.moTaCT,
-                                                    tt: selectedDetail?.tt,
-                                                    xuatXu: selectedDetail?.xuatXu,
-                                                    nguoiTao: selectedDetail?.nguoiTao,
-                                                    ngayTao: selectedDetail?.ngayTao,
-                                                    nguoiCapNhat: selectedDetail?.nguoiCapNhat,
-                                                    ngayCapNhat: selectedDetail?.ngayCapNhat,
-                                                    giaGiam: selectedDetail?.giaGiam,
-                                                    sl: quantity || 1,
-                                                    donGia: selectedDetail?.donGia || 0,
-                                                    anh: selectedDetail?.anh || "",
-                                                    idMauSac: {
-                                                        id: selectedDetail?.idMauSac?.id || 0,
-                                                        ten: selectedColor || "",
-                                                    },
-                                                    idKichThuoc: {
-                                                        id: selectedDetail?.idKichThuoc?.id || 0,
-                                                        ten: selectedSize || "",
-                                                    },
-                                                    formattedGia: selectedDetail?.formattedGia
-                                                },
-                                            ],
-                                            totalAmount: (selectedDetail?.donGia || 0) * (quantity || 1),
-                                        }}>
-                                        <Button
-                                            type="primary"
-                                            danger
-                                            onClick={handleBuyNow}
-                                            disabled={!selectedColor || !selectedSize} >
-                                            Mua ngay
-                                        </Button>
-                                    </Link>
+                                    <Button
+                                        type="primary"
+                                        danger
+                                        onClick={handleBuyNow}
+                                        disabled={!selectedColor || !selectedSize || selectedDetail?.sl == 0} >
+                                        Mua ngay
+                                    </Button>
                                 </div>
                             </Card>
                         </Col>
@@ -255,6 +271,20 @@ const ProductDetail: React.FC = () => {
                             </TabPane>
                         </Tabs>
                     </div>
+                    <Modal
+                        title="Thông báo"
+                        visible={isModalVisible}
+                        footer={null}
+                        onCancel={handleModalCancel} >
+                        <p>Bạn chưa đăng nhập, hãy đăng nhập trước để tiếp tục.</p>
+                        <br />
+                        <div style={{ textAlign: "right" }}>
+                            <SigninPage />
+                            <Button style={{ marginLeft: 8 }} onClick={handleModalCancel}>
+                                Hủy
+                            </Button>
+                        </div>
+                    </Modal>
                 </>
             )}
         </div>
